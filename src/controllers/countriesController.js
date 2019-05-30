@@ -1,32 +1,61 @@
-function all(req, res) {
+const Country = require("../models/country");
+
+async function all(req, res) {
     try {
-        res.status(200).send("return all countries");
-    } catch(err) {
-        res.status(500).send("Error retrieving countries");
+        let countries = await Country.findAll();
+        res.status(200).send(countries);
+    } catch (e) {
+        res.status(500).send(`Unable to retrieve countries: ${e.message}`);
     }
 }
 
-function getCountry(req, res) {
+async function getCountry(req, res) {
     try {
-        res.status(200).send(`return country with code ${req.params.country}`);
-    } catch(err) {
-        res.status(500).send("Error retrieving country");
+        let result = await Country.findByPk(req.params.country);
+        if(result) {
+            res.status(200).send(result);
+        } else {
+            res.status(404).send("Country not found");
+        }
+    } catch(e) {
+        res.status(500).send(`Unable to retrieve country: ${e.message}`);
     }
 }
 
-function deleteCountry(req, res) {
+async function deleteCountry(req, res) {
     try {
-        res.status(204).send(`delete country with code ${req.params.country}`);
-    } catch(err) {
-        res.status(500).send("Error deleting country");
+        let deleted = await Country.destroy({
+            where: {
+                code: req.params.country 
+            }
+        });
+        if(deleted) {
+            res.status(200).send("Done destroying country");
+        } else {
+            res.status(404).send(`Unable to destroy country: Country not found`);
+        }
+    } catch (err) {
+        res.status(500).send(`Unable to destroy country: ${err.message}`);
     }
 }
 
-function updateCreateCountry(req, res) {
+async function updateCreateCountry(req, res) {    
+    let toUpdateCountry = {
+        name: req.body.name
+    }
     try {
-        res.status(200).send(`update or create country with code ${req.params.country}`);
+        let updated = await Country.update(toUpdateCountry, {
+            where: {
+                code: req.params.country 
+            }
+        });
+        if(updated > 0) {
+            res.status(200).send(`Done updating country`);
+        } else {
+            res.status(404).send(`Unable to update country: Country not found`);
+        }
     } catch(err) {
-        res.status(500).send("Error updating or creating country");
+        res.status(500).send(`Unable to update country: ${err.message}`);
     }
 }
 

@@ -1,8 +1,5 @@
-const countries = require("../config/dataTest");
-
 function all(req, res) {
     try {
-        // countriesArr = Array.from(countries.values());
         res.status(200).send("return all regions");
     } catch(err) {
         res.status(500).send("Error retrieving regions");
