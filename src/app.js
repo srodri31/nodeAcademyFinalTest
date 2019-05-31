@@ -1,8 +1,9 @@
 const express = require("express");
 const bodyParser = require("body-parser");
-const morgan = require("morgan");
 const sequelize = require('./config/db');
 
+const requestLogger = require("./midlewares/requestLogger");
+const errorHanlder = require("./midlewares/errorHandler");
 const countries = require("./routes/countriesRoutes");
 const regions = require("./routes/regionsRoutes");
 const cities = require("./routes/citiesRoutes");
@@ -11,12 +12,14 @@ const sisters = require("./routes/sistersRoutes");
 const app = express();
 
 app.use(bodyParser.json());
-app.use(morgan("combined"));
+app.use(requestLogger);
 
 app.use("/countries", countries)
 app.use("/regions", regions);
 app.use("/cities", cities);
 app.use("/sisters", sisters);
+
+app.use(errorHanlder);
 
 sequelize
     .authenticate()

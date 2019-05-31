@@ -1,15 +1,15 @@
 const Country = require("../models/country");
 
-async function all(req, res) {
+async function all(req, res, next) {
     try {
         let countries = await Country.findAll();
         res.status(200).send(countries);
     } catch (e) {
-        res.status(500).send(`Unable to retrieve countries: ${e.message}`);
+        next(new Error(`Unable to retrieve countries: ${e.message}`));
     }
 }
 
-async function getCountry(req, res) {
+async function getCountry(req, res, next) {
     try {
         let result = await Country.findByPk(req.params.country);
         if(result) {
@@ -18,11 +18,11 @@ async function getCountry(req, res) {
             res.status(404).send("Country not found");
         }
     } catch(e) {
-        res.status(500).send(`Unable to retrieve country: ${e.message}`);
+        next(new Error(`Unable to retrieve country: ${e.message}`));
     }
 }
 
-async function deleteCountry(req, res) {
+async function deleteCountry(req, res, next) {
     try {
         let deleted = await Country.destroy({
             where: {
@@ -35,11 +35,11 @@ async function deleteCountry(req, res) {
             res.status(404).send(`Unable to destroy country: Country not found`);
         }
     } catch (err) {
-        res.status(500).send(`Unable to destroy country: ${err.message}`);
+        next(new Error(`Unable to destroy country: ${err.message}`));
     }
 }
 
-async function updateCreateCountry(req, res) {    
+async function updateCreateCountry(req, res, next) {    
     let toUpdateCountry = {
         name: req.body.name
     }
@@ -55,7 +55,7 @@ async function updateCreateCountry(req, res) {
             res.status(404).send(`Unable to update country: Country not found`);
         }
     } catch(err) {
-        res.status(500).send(`Unable to update country: ${err.message}`);
+        next(new Error(`Unable to update country: ${err.message}`));
     }
 }
 
