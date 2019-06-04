@@ -23,17 +23,17 @@ function regionHATEOAS(region) {
     }
 }
 
-async function all(req, res) {
+async function all(req, res, next) {
     try {
         let regions = await Region.findAll();
         regions = regions.map(regionHATEOAS);
         res.status(200).send(regions);
     } catch(err) {
-        res.status(500).send(`Error retrieving regions ${err.message}`);
+        next(new Error(`Error retrieving regions ${err.message}`));
     }
 }
 
-async function allByCountry(req, res) {
+async function allByCountry(req, res, next) {
     try {
         let regions = await Region.findAll({
             where: {
@@ -47,11 +47,11 @@ async function allByCountry(req, res) {
             res.status(404).send(`No regions found for ${req.params.country}`);
         }
     } catch(err) {
-        res.status(500).send(`Error retrieving regions ${err.message}`);
+        next(new Error(`Error retrieving regions ${err.message}`));
     }
 }
 
-async function getRegion(req, res) {
+async function getRegion(req, res, next) {
     try {
         let region = await Region.findByPk(req.params.region);
         if(region) {
@@ -61,11 +61,11 @@ async function getRegion(req, res) {
             res.status(404).send(`No region found with code ${req.params.region}`);
         }
     } catch(err) {
-        res.status(500).send(`Error retrieving region ${err.message}`);
+        next(new Error(`Error retrieving region ${err.message}`));
     }
 }
 
-async function deleteRegion(req, res) {
+async function deleteRegion(req, res, next) {
     try {
         let deleted = await Region.destroy({
             where: {
@@ -78,11 +78,11 @@ async function deleteRegion(req, res) {
             res.status(404).send(`No region found with code ${req.params.region}`);
         }
     } catch(err) {
-        res.status(500).send(`Error deleting region ${err.message}`);
+        next(new Error(`Error deleting region: ${err.message}`));
     }
 }
 
-async function createRegion(req,res) {
+async function createRegion(req,res,next) {
     try {
         let newRegion = {
             code: req.body.code,
@@ -93,11 +93,11 @@ async function createRegion(req,res) {
         region = regionHATEOAS(region);
         res.status(200).send(region);
     } catch(err) {
-        res.status(500).send(`Error creating region ${err.message}`);
+        next(new Error(`Error creating region: ${err.message}`));
     }
 }
 
-async function updateRegion(req, res) {
+async function updateRegion(req, res, next) {
     try {
         let region = {
             name: req.body.name,
@@ -116,7 +116,7 @@ async function updateRegion(req, res) {
             res.status(404).send(`No region found with code ${req.params.region}`);
         }
     } catch(err) {
-        res.status(500).send(`Error updating or creating region ${err.message}`);
+        next(new Error(`Error updating or creating region ${err.message}`));
     }
 }
 
