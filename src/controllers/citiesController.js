@@ -1,6 +1,6 @@
 const City = require("../models/city");
 
-async function getCities(req, res) {
+async function getCities(req, res, next) {
     try {
         const { country, region } = req.query;
         if(country) {
@@ -20,11 +20,11 @@ async function getCities(req, res) {
         }
         
     } catch(err) {
-        res.status(500).send("Error retrieving cities");
+        next(new Error(`Error retrieving cities: ${err.message}`));
     }
 }
 
-async function getCity(req, res) {
+async function getCity(req, res, next) {
     try {
         let city = await City.findByPk(req.params.city);
         if(city) {
@@ -33,11 +33,11 @@ async function getCity(req, res) {
             res.status(404).send(`No city found with code ${req.params.city}`);
         }
     } catch(err) {
-        res.status(500).send("Error retrieving city");
+        next(new Error(`Error retrieving city: ${err.message}`));
     }
 }
 
-async function deleteCity(req, res) {
+async function deleteCity(req, res, next) {
     try {
         let deleted = await City.destroy({
             where: {
@@ -50,11 +50,11 @@ async function deleteCity(req, res) {
             res.status(404).send(`No city found with code ${req.params.city}`);
         }
     } catch(err) {
-        res.status(500).send("Error deleting city");
+        next(new Error(`Error deleting city: ${err.message}`));
     }
 }
 
-async function createCity(req, res) {
+async function createCity(req, res, next) {
     try {
         const { country, region } = req.params;
         const { code, name, latitude, longitude, population } = req.body;
@@ -64,11 +64,11 @@ async function createCity(req, res) {
         let city = await City.create(newCity);
         res.status(201).send(city);
     } catch(err) {
-        res.status(500).send("Error creating city"+err.message);
+        next(new Error(`Error creating city: ${err.message}`));
     }
 }
 
-async function updateCity(req, res) {
+async function updateCity(req, res, next) {
     try {
         const { country, region, city } = req.params;
         const { name, latitude, longitude, population } = req.body;
@@ -87,7 +87,7 @@ async function updateCity(req, res) {
             res.status(404).send(`No city found with code ${city}`);
         }
     } catch(err) {
-        res.status(500).send("Error updating city");
+        next(new Error(`Error updating city: ${err.message}`));
     }
 }
 
