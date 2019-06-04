@@ -22,17 +22,17 @@ function sisterHATEOAS(sister) {
     }
 }
 
-async function all(req, res) {
+async function all(req, res, next) {
     try {
         let sisters = await Sister.findAll();
         sisters = sisters.map(sisterHATEOAS);
         res.status(200).send(sisters);
     } catch(err) {
-        res.status(500).send("Error retrieving sisters cities "+err.message);
+        next(new Error(`Error retrieving sisters cities ${err.message}`));
     }
 }
 
-async function sistersOf(req, res) {
+async function sistersOf(req, res, next) {
     try {
         let sisters = await Sister.findAll({
             where: Sequelize.or(
@@ -43,11 +43,11 @@ async function sistersOf(req, res) {
         sisters = sisters.map(sisterHATEOAS);
         res.status(200).send(sisters);
     } catch(err) {
-        res.status(500).send("Error retrieving sisters cities");
+        next(new Error(`Error retrieving sisters cities ${err.message}`));
     }
 }
 
-async function createSistersPair(req, res) {
+async function createSistersPair(req, res, next) {
     try {
         const { city1, city2 } = req.body;
         let newSisters = {
@@ -57,11 +57,11 @@ async function createSistersPair(req, res) {
         sister = sisterHATEOAS(sister);
         res.status(201).send(sister);
     } catch(err) {
-        res.status(500).send("Error creating sisters cities pair");
+        next(new Error(`Error creating sisters pair ${err.message}`));
     }
 }
 
-async function sistersPair(req, res) {
+async function sistersPair(req, res, next) {
     try {
         const { cityA, cityB } = req.params;
         let sister = await Sister.findOne({
@@ -77,11 +77,11 @@ async function sistersPair(req, res) {
             res.status(404).send(`Sisters pair not found for cities ${cityA} and ${cityB}`);
         }
     } catch(err) {
-        res.status(500).send("Error retrieving sisters cities pair");
+        next(new Error(`Error retrieving sisters pair ${err.message}`));
     }
 }
 
-async function updateSistersPair(req, res) {
+async function updateSistersPair(req, res, next) {
     try {
         const { cityA, cityB } = req.params;
         const { city1, city2 } = req.body;
@@ -98,11 +98,11 @@ async function updateSistersPair(req, res) {
             res.status(404).send(`Sisters pair not found for cities ${cityA} and ${cityB}`);
         }
     } catch(err) {
-        res.status(500).send("Error uodating sisters cities pair");
+        next(new Error(`Error updating sisters pair ${err.message}`));
     }
 }
 
-async function deleteSistersPair(req, res) {
+async function deleteSistersPair(req, res, next) {
     try {
         const { cityA, cityB } = req.params;
         let deleted = await Sister.destroy({
@@ -117,7 +117,7 @@ async function deleteSistersPair(req, res) {
             res.status(404).send(`Sisters pair not found for cities ${cityA} and ${cityB}`);
         }
     } catch(err) {
-        res.status(500).send("Error deleting sisters cities pair");
+        next(new Error(`Error deleting sisters pair ${err.message}`));
     }
 }
 
