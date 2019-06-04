@@ -1,5 +1,5 @@
 const { createLogger, format, transports } = require('winston');
-const { colorize, printf, combine, simple, timestamp, json } = format;
+const { colorize, printf, combine, timestamp } = format;
 
 const errorLogger = createLogger({
   transports: [

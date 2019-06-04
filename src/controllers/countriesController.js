@@ -1,10 +1,34 @@
 const Country = require("../models/country");
 
+function countryHATEOAS(country) {
+    const { code, name } = country;
+    return {
+        code,
+        name,
+        links: [
+            {
+                rel: "self",
+                href: `/countries/${code}`
+            },
+            {
+                rel: "regions",
+                href: `/regions/${code}`
+            },
+            {
+                rel: "cities",
+                href: `/cities/?country=${code}`
+            }
+        ]
+    }
+}
+
 async function all(req, res, next) {
     try {
         let countries = await Country.findAll();
-        res.status(200).send(countries);
+        let result = countries.map(countryHATEOAS)
+        return res.status(200).send(result);
     } catch (e) {
+        console.log(e);
         next(new Error(`Unable to retrieve countries: ${e.message}`));
     }
 }
@@ -13,7 +37,8 @@ async function getCountry(req, res, next) {
     try {
         let result = await Country.findByPk(req.params.country);
         if(result) {
-            res.status(200).send(result);
+            let country = countryHATEOAS(result);
+            res.status(200).send(country);
         } else {
             res.status(404).send("Country not found");
         }
@@ -50,7 +75,9 @@ async function updateCreateCountry(req, res, next) {
             }
         });
         if(updated > 0) {
-            res.status(200).send(`Done updating country`);
+            let country = await Country.findByPk(req.params.country);
+            country = countryHATEOAS(country);
+            res.status(200).send(country);
         } else {
             res.status(404).send(`Unable to update country: Country not found`);
         }
