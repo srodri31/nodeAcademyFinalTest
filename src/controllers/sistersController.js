@@ -1,9 +1,31 @@
 const Sequelize = require("sequelize");
 const Sister = require("../models/sister");
 
+function sisterHATEOAS(sister) {
+    const { city1, city2 } = sister;
+    return {
+        city1, city2,
+        links: [
+            {
+                rel: "self",
+                href: `/sisters/${city1}/${city2}`
+            },
+            {
+                rel: "city1",
+                href: `/cities/${city1}`
+            },
+            {
+                rel: "city2",
+                href: `/cities/${city2}`
+            }
+        ]
+    }
+}
+
 async function all(req, res) {
     try {
         let sisters = await Sister.findAll();
+        sisters = sisters.map(sisterHATEOAS);
         res.status(200).send(sisters);
     } catch(err) {
         res.status(500).send("Error retrieving sisters cities "+err.message);
@@ -18,6 +40,7 @@ async function sistersOf(req, res) {
                 {city2: req.params.city}
             )
         })
+        sisters = sisters.map(sisterHATEOAS);
         res.status(200).send(sisters);
     } catch(err) {
         res.status(500).send("Error retrieving sisters cities");
@@ -31,6 +54,7 @@ async function createSistersPair(req, res) {
             city1, city2
         }
         let sister = await Sister.create(newSisters);
+        sister = sisterHATEOAS(sister);
         res.status(201).send(sister);
     } catch(err) {
         res.status(500).send("Error creating sisters cities pair");
@@ -47,6 +71,7 @@ async function sistersPair(req, res) {
             )
         })
         if(sister) {
+            sister = sisterHATEOAS(sister);
             res.status(200).send(sister);
         } else {
             res.status(404).send(`Sisters pair not found for cities ${cityA} and ${cityB}`);
