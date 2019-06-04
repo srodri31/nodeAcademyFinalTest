@@ -1,50 +1,96 @@
-function all(req, res) {
+const Sequelize = require("sequelize");
+const Sister = require("../models/sister");
+
+async function all(req, res) {
     try {
-        res.status(200).send("return all sister cities pairs");
+        let sisters = await Sister.findAll();
+        res.status(200).send(sisters);
+    } catch(err) {
+        res.status(500).send("Error retrieving sisters cities "+err.message);
+    }
+}
+
+async function sistersOf(req, res) {
+    try {
+        let sisters = await Sister.findAll({
+            where: Sequelize.or(
+                {city1: req.params.city},
+                {city2: req.params.city}
+            )
+        })
+        res.status(200).send(sisters);
     } catch(err) {
         res.status(500).send("Error retrieving sisters cities");
     }
 }
 
-function sistersOf(req, res) {
+async function createSistersPair(req, res) {
     try {
-        res.status(200).send(`return all sister cities pairs of ${req.params.city}`);
-    } catch(err) {
-        res.status(500).send("Error retrieving sisters cities");
-    }
-}
-
-function createSistersPair(req, res) {
-    try {
-        const { cityA, cityB } = req.body;
-        res.status(201).send(`create sisters pair for ${cityA} and ${cityB}`);
+        const { city1, city2 } = req.body;
+        let newSisters = {
+            city1, city2
+        }
+        let sister = await Sister.create(newSisters);
+        res.status(201).send(sister);
     } catch(err) {
         res.status(500).send("Error creating sisters cities pair");
     }
 }
 
-function sistersPair(req, res) {
+async function sistersPair(req, res) {
     try {
         const { cityA, cityB } = req.params;
-        res.status(200).send(`return sisters pair for ${cityA} and ${cityB}`);
+        let sister = await Sister.findOne({
+            where: Sequelize.or(
+                {city1: cityA, city2: cityB},
+                {city1: cityB, city2: cityA}
+            )
+        })
+        if(sister) {
+            res.status(200).send(sister);
+        } else {
+            res.status(404).send(`Sisters pair not found for cities ${cityA} and ${cityB}`);
+        }
     } catch(err) {
         res.status(500).send("Error retrieving sisters cities pair");
     }
 }
 
-function updateSistersPair(req, res) {
+async function updateSistersPair(req, res) {
     try {
         const { cityA, cityB } = req.params;
-        res.status(200).send(`update sisters pair for ${cityA} and ${cityB} with body`);
+        const { city1, city2 } = req.body;
+        let sisterPair = { city1, city2 };
+        let updatedRows = await Sister.update( sisterPair, {
+            where: Sequelize.or(
+                {city1: cityA, city2: cityB},
+                {city1: cityB, city2: cityA}
+            )
+        });
+        if(updatedRows > 0) {
+            res.status(200).send(`Done updating sisters pair`);
+        } else {
+            res.status(404).send(`Sisters pair not found for cities ${cityA} and ${cityB}`);
+        }
     } catch(err) {
         res.status(500).send("Error uodating sisters cities pair");
     }
 }
 
-function deleteSistersPair(req, res) {
+async function deleteSistersPair(req, res) {
     try {
         const { cityA, cityB } = req.params;
-        res.status(204).send(`delete sisters pair for ${cityA} and ${cityB}`);
+        let deleted = await Sister.destroy({
+            where: Sequelize.or(
+                {city1: cityA, city2: cityB},
+                {city1: cityB, city2: cityA}
+            )
+        });
+        if(deleted) {
+            res.status(204).send(`Deleted sisters pair for ${cityA} and ${cityB}`);
+        } else {
+            res.status(404).send(`Sisters pair not found for cities ${cityA} and ${cityB}`);
+        }
     } catch(err) {
         res.status(500).send("Error deleting sisters cities pair");
     }
