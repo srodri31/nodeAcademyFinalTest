@@ -1,48 +1,94 @@
-function all(req, res) {
+const Region = require("../models/region");
+
+async function all(req, res) {
     try {
-        res.status(200).send("return all regions");
+        let regions = await Region.findAll();
+        res.status(200).send(regions);
     } catch(err) {
-        res.status(500).send("Error retrieving regions");
+        res.status(500).send(`Error retrieving regions ${err.message}`);
     }
 }
 
-function allByCountry(req, res) {
+async function allByCountry(req, res) {
     try {
-        res.status(200).send(`return all regions from ${req.params.country}`);
+        let regions = await Region.findAll({
+            where: {
+                country: req.params.country
+            }
+        })
+        if(regions){
+            res.status(200).send(regions);
+        } else {
+            res.status(404).send(`No regions found for ${req.params.country}`);
+        }
     } catch(err) {
-        res.status(500).send("Error retrieving regions");
+        res.status(500).send(`Error retrieving regions ${err.message}`);
     }
 }
 
-function getRegion(req, res) {
+async function getRegion(req, res) {
     try {
-        res.status(200).send(`return region with id ${req.params.region}`);
+        let region = await Region.findByPk(req.params.region);
+        if(region) {
+            res.status(200).send(region);
+        } else {
+            res.status(404).send(`No region found with code ${req.params.region}`);
+        }
     } catch(err) {
-        res.status(500).send("Error retrieving region");
+        res.status(500).send(`Error retrieving region ${err.message}`);
     }
 }
 
-function deleteRegion(req, res) {
+async function deleteRegion(req, res) {
     try {
-        res.status(204).send(`delete region with id ${req.params.region}`);
+        let deleted = await Region.destroy({
+            where: {
+                code: req.params.region
+            }
+        });
+        if(deleted) {
+            res.status(204).send(`deleted region with code ${req.params.region}`);
+        } else {
+            res.status(404).send(`No region found with code ${req.params.region}`);
+        }
     } catch(err) {
-        res.status(500).send("Error deleting region");
+        res.status(500).send(`Error deleting region ${err.message}`);
     }
 }
 
-function createRegion(req,res) {
+async function createRegion(req,res) {
     try {
-        res.status(200).send(`create region for country ${req.params.country}`);
+        let newRegion = {
+            code: req.body.code,
+            name: req.body.name,
+            country: req.params.country
+        }
+        let region = await Region.create(newRegion);
+        res.status(200).send(region);
     } catch(err) {
-        res.status(500).send("Error creating region");
+        res.status(500).send(`Error creating region ${err.message}`);
     }
 }
 
-function updateRegion(req, res) {
+async function updateRegion(req, res) {
     try {
-        res.status(200).send(`update or create region with id ${req.params.region}`);
+        let region = {
+            name: req.body.name,
+            country: req.body.country
+        }
+        let updatedRows = await Region.update(region, {
+            where: {
+                code: req.params.region
+            }
+        })
+        if(updatedRows > 0) {
+            let region = await Region.findByPk(req.params.region);
+            res.status(200).send(region);
+        } else {
+            res.status(404).send(`No region found with code ${req.params.region}`);
+        }
     } catch(err) {
-        res.status(500).send("Error updating or creating region");
+        res.status(500).send(`Error updating or creating region ${err.message}`);
     }
 }
 

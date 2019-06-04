@@ -28,7 +28,6 @@ async function all(req, res, next) {
         let result = countries.map(countryHATEOAS)
         return res.status(200).send(result);
     } catch (e) {
-        console.log(e);
         next(new Error(`Unable to retrieve countries: ${e.message}`));
     }
 }
