@@ -1,5 +1,30 @@
 const City = require("../models/city");
 
+function cityHATEOAS(city) {
+    const { code, name, latitude, longitude, population, region, country } = city;
+    return {
+        code, name, latitude, longitude, population, region, country,
+        links: [
+            {
+                rel: "self",
+                href: `/cities/${code}`
+            },
+            {
+                rel: "country",
+                href: `/countries/${country}`
+            },
+            {
+                rel: "region",
+                href: `/regions/${country}/${region}`
+            },
+            {
+                rel: "sisters",
+                href: `/sisters/${code}`
+            }
+        ]
+    }
+}
+
 async function getCities(req, res, next) {
     try {
         const { country, region } = req.query;
@@ -14,6 +39,7 @@ async function getCities(req, res, next) {
                     where: { country }
                 })
             }
+            cities = cities.map(cityHATEOAS);
             res.status(200).send(cities);
         } else {
             res.status(405).send("request must inlude query params country");
@@ -28,6 +54,7 @@ async function getCity(req, res, next) {
     try {
         let city = await City.findByPk(req.params.city);
         if(city) {
+            city = cityHATEOAS(city);
             res.status(200).send(city);
         } else {
             res.status(404).send(`No city found with code ${req.params.city}`);
@@ -62,6 +89,7 @@ async function createCity(req, res, next) {
             code, name, latitude, longitude, population, country, region
         }
         let city = await City.create(newCity);
+        city = cityHATEOAS(city);
         res.status(201).send(city);
     } catch(err) {
         next(new Error(`Error creating city: ${err.message}`));
@@ -82,6 +110,7 @@ async function updateCity(req, res, next) {
         });
         if(updatedRows > 0) {
             let cityUpdated = await City.findByPk(city);
+            cityUpdated = cityHATEOAS(cityUpdated);
             res.status(200).send(cityUpdated);
         } else {
             res.status(404).send(`No city found with code ${city}`);
