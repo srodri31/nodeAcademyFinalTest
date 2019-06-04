@@ -1,8 +1,32 @@
 const Region = require("../models/region");
 
+function regionHATEOAS(region) {
+    const { code, name, country } = region;
+    return {
+        code,
+        name,
+        country,
+        links: [
+            {
+                rel: "self",
+                href: `/regions/${country}/${code}`
+            },
+            {
+                rel: "country",
+                href: `/countries/${country}`
+            },
+            {
+                rel: "cities",
+                href: `/cities/?country=${country}&region=${code}`
+            }
+        ]
+    }
+}
+
 async function all(req, res) {
     try {
         let regions = await Region.findAll();
+        regions = regions.map(regionHATEOAS);
         res.status(200).send(regions);
     } catch(err) {
         res.status(500).send(`Error retrieving regions ${err.message}`);
@@ -17,6 +41,7 @@ async function allByCountry(req, res) {
             }
         })
         if(regions){
+            regions = regions.map(regionHATEOAS);
             res.status(200).send(regions);
         } else {
             res.status(404).send(`No regions found for ${req.params.country}`);
@@ -30,6 +55,7 @@ async function getRegion(req, res) {
     try {
         let region = await Region.findByPk(req.params.region);
         if(region) {
+            region = regionHATEOAS(region);
             res.status(200).send(region);
         } else {
             res.status(404).send(`No region found with code ${req.params.region}`);
@@ -64,6 +90,7 @@ async function createRegion(req,res) {
             country: req.params.country
         }
         let region = await Region.create(newRegion);
+        region = regionHATEOAS(region);
         res.status(200).send(region);
     } catch(err) {
         res.status(500).send(`Error creating region ${err.message}`);
@@ -83,6 +110,7 @@ async function updateRegion(req, res) {
         })
         if(updatedRows > 0) {
             let region = await Region.findByPk(req.params.region);
+            region = regionHATEOAS(region);
             res.status(200).send(region);
         } else {
             res.status(404).send(`No region found with code ${req.params.region}`);
