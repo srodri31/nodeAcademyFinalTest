@@ -1,9 +1,11 @@
+const Sequelize = require("sequelize");
 const City = require("../models/city");
+const Sister = require("../models/sister");
 
 function cityHATEOAS(city) {
-    const { code, name, latitude, longitude, population, region, country } = city;
+    const { code, name, latitude, longitude, population, region, country, sisters } = city;
     return {
-        code, name, latitude, longitude, population, region, country,
+        code, name, latitude, longitude, population, region, country, sisters,
         links: [
             {
                 rel: "self",
@@ -25,6 +27,17 @@ function cityHATEOAS(city) {
     }
 }
 
+async function sistersOf(city) {
+    let sisters = await Sister.findAll({
+        where: Sequelize.or(
+            {city1: city.code},
+            {city2: city.code}
+        )
+    })
+    city.sisters = sisters.map(record => record.city1 === city.code ? record.city2 : record.city1);
+    return city;
+} 
+
 async function getCities(req, res, next) {
     try {
         const { country, region } = req.query;
@@ -39,7 +52,12 @@ async function getCities(req, res, next) {
                     where: { country }
                 })
             }
-            cities = cities.map(cityHATEOAS);
+            promises = cities.map(async city => {
+                city = await sistersOf(city);
+                city = cityHATEOAS(city);
+                return city;
+            });
+            cities = await Promise.all(promises);
             res.status(200).send(cities);
         } else {
             res.status(405).send("request must inlude query params country");
@@ -54,12 +72,14 @@ async function getCity(req, res, next) {
     try {
         let city = await City.findByPk(req.params.city);
         if(city) {
+            city = await sistersOf(city);
             city = cityHATEOAS(city);
             res.status(200).send(city);
         } else {
             res.status(404).send(`No city found with code ${req.params.city}`);
         }
     } catch(err) {
+        console.log(err);
         next(new Error(`Error retrieving city: ${err.message}`));
     }
 }
@@ -110,6 +130,7 @@ async function updateCity(req, res, next) {
         });
         if(updatedRows > 0) {
             let cityUpdated = await City.findByPk(city);
+            cityUpdated = await sistersOf(cityUpdated);
             cityUpdated = cityHATEOAS(cityUpdated);
             res.status(200).send(cityUpdated);
         } else {
