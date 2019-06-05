@@ -22,7 +22,7 @@ function countryHATEOAS(country) {
     }
 }
 
-async function all(req, res, next) {
+async function all(req, res, next, Country) {
     try {
         let countries = await Country.findAll();
         let result = countries.map(countryHATEOAS)
@@ -32,7 +32,7 @@ async function all(req, res, next) {
     }
 }
 
-async function getCountry(req, res, next) {
+async function getCountry(req, res, next, Country) {
     try {
         let result = await Country.findByPk(req.params.country);
         if(result) {
@@ -46,7 +46,7 @@ async function getCountry(req, res, next) {
     }
 }
 
-async function deleteCountry(req, res, next) {
+async function deleteCountry(req, res, next, Country) {
     try {
         let deleted = await Country.destroy({
             where: {
@@ -54,7 +54,7 @@ async function deleteCountry(req, res, next) {
             }
         });
         if(deleted) {
-            res.status(200).send("Done destroying country");
+            res.status(204).send("Done destroying country");
         } else {
             res.status(404).send(`Unable to destroy country: Country not found`);
         }
@@ -63,23 +63,30 @@ async function deleteCountry(req, res, next) {
     }
 }
 
-async function updateCreateCountry(req, res, next) {    
-    let toUpdateCountry = {
-        name: req.body.name
-    }
+async function updateCreateCountry(req, res, next, Country) {    
     try {
+        let country, status;
+        let toUpdateCountry = {
+            name: req.body.name
+        }
         let updated = await Country.update(toUpdateCountry, {
             where: {
                 code: req.params.country 
             }
         });
         if(updated > 0) {
-            let country = await Country.findByPk(req.params.country);
-            country = countryHATEOAS(country);
-            res.status(200).send(country);
+            country = await Country.findByPk(req.params.country);
+            status = 200;
         } else {
-            res.status(404).send(`Unable to update country: Country not found`);
+            let newCountry = {
+                code: req.params.country,
+                name: req.body.name
+            }
+            country = await Country.create(newCountry);
+            status = 201;
         }
+        country = countryHATEOAS(country);
+        res.status(status).send(country);
     } catch(err) {
         next(new Error(`Unable to update country: ${err.message}`));
     }
