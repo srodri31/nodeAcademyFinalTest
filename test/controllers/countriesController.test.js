@@ -66,7 +66,7 @@ describe("get one country", () => {
         expect(mockResponse.statusCode).toBe(200);
     })
 
-    it("should return 404 if not country is found", async () => {
+    it("should return 404 if no country is found", async () => {
         mockRequest.params.country = "BAZ";
         mockModel = {
             findByPk: async (code) => Promise.resolve()
@@ -162,39 +162,52 @@ describe("delete country", () => {
         mockNext = jest.fn();
     });
 
-    it("should return 204 when country is deleted", async () => {
+    it("should return 204 when country is deleted because it has no regions", async () => {
         mockRequest.params.country = "FOO";
         mockModel = {
-            destroy: async () => Promise.resolve(1)
+            destroy: async () => Promise.resolve(1),
+            findOne: async () => Promise.resolve()
         }
-        await countriesController.deleteCountry(mockRequest, mockResponse, mockNext, mockModel);
+        await countriesController.deleteCountry(mockRequest, mockResponse, mockNext, mockModel, mockModel);
         expect(mockResponse.statusCode).toBe(204);
     })
 
     it("should return 404 if given country is not found", async () => {
         mockRequest.params.country = "BAR";
         mockModel = {
-            destroy: async () => Promise.resolve(0)
+            destroy: async () => Promise.resolve(0),
+            findOne: async () => Promise.resolve()
         }
-        await countriesController.deleteCountry(mockRequest, mockResponse, mockNext, mockModel);
+        await countriesController.deleteCountry(mockRequest, mockResponse, mockNext, mockModel, mockModel);
         expect(mockResponse.statusCode).toBe(404);
     })
 
-    it("should call error middleware if query fails", async () => {
+    it("should return 405 when it violates region foreign key", async () => {
+        mockRequest.params.country = "FO";
+        mockModel = {
+            destroy: async () => Promise.resolve(0),
+            findOne: async () => Promise.resolve({code: "region"})
+        }
+        await countriesController.deleteCountry(mockRequest, mockResponse, () => {}, mockModel, mockModel);
+        expect(mockResponse.statusCode).toBe(405);
+    })
+
+    it("should call error middleware if delete fails", async () => {
         mockRequest.params.country = "BAZ";
         mockModel = {
-            destroy: async () => Promise.reject(new Error("Error in db"))
+            destroy: async () => Promise.reject(new Error("Error in db")),
+            findOne: async () => Promise.resolve()
         }
-        await countriesController.deleteCountry(mockRequest, mockResponse, mockNext, mockModel);
+        await countriesController.deleteCountry(mockRequest, mockResponse, mockNext, mockModel, mockModel);
         expect(mockNext).toHaveBeenCalled();
     })
 
-    // it("should return 405 violates region foreign key", async () => {
-    //     mockRequest.params.country = "FO";
-    //     mockModel = {
-    //         destroy: async () => Promise.resolve(0)
-    //     }
-    //     await countriesController.deleteCountry(mockRequest, mockResponse, () => {}, mockModel);
-    //     expect(mockResponse.statusCode).toBe(405);
-    // })
+    it("should call error middleware if select regions fails", async () => {
+        mockRequest.params.country = "BAZ";
+        mockModel = {
+            findOne: async () => Promise.reject(new Error("Error in db"))
+        }
+        await countriesController.deleteCountry(mockRequest, mockResponse, mockNext, mockModel, mockModel);
+        expect(mockNext).toHaveBeenCalled();
+    })
 })

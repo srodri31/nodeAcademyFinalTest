@@ -1,5 +1,3 @@
-const Country = require("../models/country");
-
 function countryHATEOAS(country) {
     const { code, name } = country;
     return {
@@ -46,17 +44,26 @@ async function getCountry(req, res, next, Country) {
     }
 }
 
-async function deleteCountry(req, res, next, Country) {
+async function deleteCountry(req, res, next, Country, Region) {
     try {
-        let deleted = await Country.destroy({
+        let regions = await Region.findOne({
             where: {
-                code: req.params.country 
+                country: req.params.country
             }
-        });
-        if(deleted) {
-            res.status(204).send("Done destroying country");
+        })
+        if(!regions){
+            let deleted = await Country.destroy({
+                where: {
+                    code: req.params.country 
+                }
+            });
+            if(deleted) {
+                res.status(204).send("Done destroying country");
+            } else {
+                res.status(404).send(`Unable to destroy country: Country not found`);
+            }
         } else {
-            res.status(404).send(`Unable to destroy country: Country not found`);
+            res.status(405).send(`Country with regions can not be deleted`);
         }
     } catch (err) {
         next(new Error(`Unable to destroy country: ${err.message}`));
