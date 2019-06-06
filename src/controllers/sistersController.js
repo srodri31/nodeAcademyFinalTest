@@ -1,5 +1,4 @@
 const Sequelize = require("sequelize");
-const Sister = require("../models/sister");
 
 function sisterHATEOAS(sister) {
     const { city1, city2 } = sister;
@@ -22,7 +21,7 @@ function sisterHATEOAS(sister) {
     }
 }
 
-async function all(req, res, next) {
+async function all(req, res, next, Sister) {
     try {
         let sisters = await Sister.findAll();
         sisters = sisters.map(sisterHATEOAS);
@@ -32,7 +31,7 @@ async function all(req, res, next) {
     }
 }
 
-async function sistersOf(req, res, next) {
+async function sistersOf(req, res, next, Sister) {
     try {
         let sisters = await Sister.findAll({
             where: Sequelize.or(
@@ -40,28 +39,38 @@ async function sistersOf(req, res, next) {
                 {city2: req.params.city}
             )
         })
-        sisters = sisters.map(sisterHATEOAS);
-        res.status(200).send(sisters);
+        if(sisters){
+            sisters = sisters.map(sisterHATEOAS);
+            res.status(200).send(sisters);
+        } else {
+            res.status(404).send(`There are no sisters for city ${req.params.city}`)
+        }
     } catch(err) {
         next(new Error(`Error retrieving sisters cities ${err.message}`));
     }
 }
 
-async function createSistersPair(req, res, next) {
+async function createSistersPair(req, res, next, Sister, City) {
     try {
         const { city1, city2 } = req.body;
-        let newSisters = {
-            city1, city2
+        let cityA = await City.findByPk(city1);
+        let cityB = await City.findByPk(city2);
+        if(cityA && cityB) {
+            let newSisters = {
+                city1, city2
+            }
+            let sister = await Sister.create(newSisters);
+            sister = sisterHATEOAS(sister);
+            res.status(201).send(sister);
+        } else {
+            res.status(405).send(`Cannot create sisters pair for nonexistent cities`);
         }
-        let sister = await Sister.create(newSisters);
-        sister = sisterHATEOAS(sister);
-        res.status(201).send(sister);
     } catch(err) {
         next(new Error(`Error creating sisters pair ${err.message}`));
     }
 }
 
-async function sistersPair(req, res, next) {
+async function sistersPair(req, res, next, Sister) {
     try {
         const { cityA, cityB } = req.params;
         let sister = await Sister.findOne({
@@ -81,7 +90,7 @@ async function sistersPair(req, res, next) {
     }
 }
 
-async function updateSistersPair(req, res, next) {
+async function updateSistersPair(req, res, next, Sister, City) {
     try {
         const { cityA, cityB } = req.params;
         const { city1, city2 } = req.body;
@@ -95,14 +104,22 @@ async function updateSistersPair(req, res, next) {
         if(updatedRows > 0) {
             res.status(200).send(`Done updating sisters pair`);
         } else {
-            res.status(404).send(`Sisters pair not found for cities ${cityA} and ${cityB}`);
+            let cityA = await City.findByPk(city1);
+            let cityB = await City.findByPk(city2);
+            if(cityA && cityB) {
+                let sister = await Sister.create(sisterPair);
+                sister = sisterHATEOAS(sister);
+                res.status(201).send(sister);
+            } else {
+                res.status(405).send(`Cannot create sisters pair for nonexistent cities`);
+            }
         }
     } catch(err) {
         next(new Error(`Error updating sisters pair ${err.message}`));
     }
 }
 
-async function deleteSistersPair(req, res, next) {
+async function deleteSistersPair(req, res, next, Sister) {
     try {
         const { cityA, cityB } = req.params;
         let deleted = await Sister.destroy({
