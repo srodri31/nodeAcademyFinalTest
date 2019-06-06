@@ -79,7 +79,7 @@ describe("get one country", () => {
         mockModel = {
             findByPk: async () => Promise.reject(new Error("Problem"))
         }
-        await countriesController.all(mockRequest, mockResponse, mockNext, mockModel);
+        await countriesController.getCountry(mockRequest, mockResponse, mockNext, mockModel);
         expect(mockNext).toHaveBeenCalled();
     })
 })
@@ -128,7 +128,7 @@ describe("update or create country", () => {
         mockModel = {
             update: async () => Promise.reject(new Error("Problem"))
         }
-        await countriesController.all(mockRequest, mockResponse, mockNext, mockModel);
+        await countriesController.updateCreateCountry(mockRequest, mockResponse, mockNext, mockModel);
         expect(mockNext).toHaveBeenCalled();
     })
 
@@ -137,7 +137,7 @@ describe("update or create country", () => {
             update: async (record, options) => Promise.resolve(0),
             create: async (country) => Promise.reject(new Error("Problem"))
         }
-        await countriesController.all(mockRequest, mockResponse, mockNext, mockModel);
+        await countriesController.updateCreateCountry(mockRequest, mockResponse, mockNext, mockModel);
         expect(mockNext).toHaveBeenCalled();
     })
 })
@@ -188,7 +188,7 @@ describe("delete country", () => {
             destroy: async () => Promise.resolve(0),
             findOne: async () => Promise.resolve({code: "region"})
         }
-        await countriesController.deleteCountry(mockRequest, mockResponse, () => {}, mockModel, mockModel);
+        await countriesController.deleteCountry(mockRequest, mockResponse, mockNext, mockModel, mockModel);
         expect(mockResponse.statusCode).toBe(405);
     })
 
