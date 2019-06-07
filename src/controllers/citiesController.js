@@ -1,7 +1,3 @@
-const Sequelize = require("sequelize");
-const City = require("../models/city");
-const Sister = require("../models/sister");
-
 function cityHATEOAS(city) {
     const { code, name, latitude, longitude, population, region, country, sisters } = city;
     return {
@@ -27,18 +23,7 @@ function cityHATEOAS(city) {
     }
 }
 
-async function sistersOf(city) {
-    let sisters = await Sister.findAll({
-        where: Sequelize.or(
-            {city1: city.code},
-            {city2: city.code}
-        )
-    })
-    city.sisters = sisters.map(record => record.city1 === city.code ? record.city2 : record.city1);
-    return city;
-} 
-
-async function getCities(req, res, next) {
+async function getCities(req, res, next, City, sistersOf) {
     try {
         const { country, region } = req.query;
         if(country) {
@@ -52,13 +37,17 @@ async function getCities(req, res, next) {
                     where: { country }
                 })
             }
-            promises = cities.map(async city => {
-                city = await sistersOf(city);
-                city = cityHATEOAS(city);
-                return city;
-            });
-            cities = await Promise.all(promises);
-            res.status(200).send(cities);
+            if(cities.length > 0) {
+                promises = cities.map(async city => {
+                    city = await sistersOf(city);
+                    city = cityHATEOAS(city);
+                    return city;
+                });
+                cities = await Promise.all(promises);
+                res.status(200).send(cities);
+            } else {
+                res.status(404).send(`No cities found for specified params`)
+            }
         } else {
             res.status(405).send("request must inlude query params country");
         }
@@ -68,7 +57,7 @@ async function getCities(req, res, next) {
     }
 }
 
-async function getCity(req, res, next) {
+async function getCity(req, res, next, City, sistersOf) {
     try {
         let city = await City.findByPk(req.params.city);
         if(city) {
@@ -79,62 +68,81 @@ async function getCity(req, res, next) {
             res.status(404).send(`No city found with code ${req.params.city}`);
         }
     } catch(err) {
-        console.log(err);
         next(new Error(`Error retrieving city: ${err.message}`));
     }
 }
 
-async function deleteCity(req, res, next) {
+async function deleteCity(req, res, next, City, sistersOf) {
     try {
-        let deleted = await City.destroy({
-            where: {
-                code: req.params.city
+        let sisters = await sistersOf({code: req.params.city});
+        if(sisters.length === 0) {
+            let deleted = await City.destroy({
+                where: {
+                    code: req.params.city
+                }
+            });
+            if(deleted) {
+                res.status(204).send(`City with code ${req.params.city} deleted`);
+            } else {
+                res.status(404).send(`No city found with code ${req.params.city}`);
             }
-        });
-        if(deleted) {
-            res.status(204).send(`City with code ${req.params.city} deleted`);
         } else {
-            res.status(404).send(`No city found with code ${req.params.city}`);
+            res.status(405).send(`Cannot delete city with sisters`);
         }
     } catch(err) {
         next(new Error(`Error deleting city: ${err.message}`));
     }
 }
 
-async function createCity(req, res, next) {
+async function createCity(req, res, next, City, Region, Country) {
     try {
         const { country, region } = req.params;
-        const { code, name, latitude, longitude, population } = req.body;
-        let newCity = {
-            code, name, latitude, longitude, population, country, region
+        let regionRecord = await Region.findByPk(region);
+        let countryRecord = await Country.findByPk(country);
+        if(countryRecord && regionRecord) {
+            const { code, name, latitude, longitude, population } = req.body;
+            let newCity = {
+                code, name, latitude, longitude, population, country, region
+            }
+            let city = await City.create(newCity);
+            city = cityHATEOAS(city);
+            res.status(201).send(city);
+        } else {
+            res.status(405).send(`Cannot create city with non existent country and/or non existent region`);
         }
-        let city = await City.create(newCity);
-        city = cityHATEOAS(city);
-        res.status(201).send(city);
     } catch(err) {
         next(new Error(`Error creating city: ${err.message}`));
     }
 }
 
-async function updateCity(req, res, next) {
+async function updateCity(req, res, next, City, Region, Country, sistersOf) {
     try {
-        const { country, region, city } = req.params;
+        const { country, region, city: code } = req.params;
         const { name, latitude, longitude, population } = req.body;
         let toUpdateCity = {
             name, latitude, longitude, population, country, region
         }
         let updatedRows = await City.update(toUpdateCity, {
-            where: {
-                code: city
-            }
+            where: { code }
         });
         if(updatedRows > 0) {
-            let cityUpdated = await City.findByPk(city);
+            let cityUpdated = await City.findByPk(code);
             cityUpdated = await sistersOf(cityUpdated);
             cityUpdated = cityHATEOAS(cityUpdated);
             res.status(200).send(cityUpdated);
         } else {
-            res.status(404).send(`No city found with code ${city}`);
+            let regionRecord = await Region.findByPk(region);
+            let countryRecord = await Country.findByPk(country);
+            if(countryRecord && regionRecord) {
+                let newCity = {
+                    code, name, latitude, longitude, population, country, region
+                }
+                let city = await City.create(newCity);
+                city = cityHATEOAS(city);
+                res.status(201).send(city);
+            } else {
+                res.status(405).send(`Cannot create city with non existent country and/or non existent region`);
+            }
         }
     } catch(err) {
         next(new Error(`Error updating city: ${err.message}`));
