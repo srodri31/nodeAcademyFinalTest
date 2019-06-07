@@ -1,27 +1,4 @@
-function cityHATEOAS(city) {
-    const { code, name, latitude, longitude, population, region, country, sisters } = city;
-    return {
-        code, name, latitude, longitude, population, region, country, sisters,
-        links: [
-            {
-                rel: "self",
-                href: `/cities/${code}`
-            },
-            {
-                rel: "country",
-                href: `/countries/${country}`
-            },
-            {
-                rel: "region",
-                href: `/regions/${country}/${region}`
-            },
-            {
-                rel: "sisters",
-                href: `/sisters/${code}`
-            }
-        ]
-    }
-}
+const { cityHATEOAS } = require("../utils/HATEOAS");
 
 async function getCities(req, res, next, City, sistersOf) {
     try {

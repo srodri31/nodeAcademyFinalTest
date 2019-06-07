@@ -1,25 +1,6 @@
 const Sequelize = require("sequelize");
 
-function sisterHATEOAS(sister) {
-    const { city1, city2 } = sister;
-    return {
-        city1, city2,
-        links: [
-            {
-                rel: "self",
-                href: `/sisters/${city1}/${city2}`
-            },
-            {
-                rel: "city1",
-                href: `/cities/${city1}`
-            },
-            {
-                rel: "city2",
-                href: `/cities/${city2}`
-            }
-        ]
-    }
-}
+const { sisterHATEOAS } = require("../utils/HATEOAS");
 
 async function all(req, res, next, Sister) {
     try {

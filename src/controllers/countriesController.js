@@ -1,24 +1,4 @@
-function countryHATEOAS(country) {
-    const { code, name } = country;
-    return {
-        code,
-        name,
-        links: [
-            {
-                rel: "self",
-                href: `/countries/${code}`
-            },
-            {
-                rel: "regions",
-                href: `/regions/${code}`
-            },
-            {
-                rel: "cities",
-                href: `/cities/?country=${code}`
-            }
-        ]
-    }
-}
+const { countryHATEOAS } = require("../utils/HATEOAS");
 
 async function all(req, res, next, Country) {
     try {
