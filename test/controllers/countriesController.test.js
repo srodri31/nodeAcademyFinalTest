@@ -105,17 +105,19 @@ describe("update or create country", () => {
     });
 
     it("should return 200 if it is modified", async () => {
-        mockRequest.params.country = "FOO";
+        mockRequest.params.country = "FO";
+        mockRequest.body.name = "FOOLANDIA";
         mockModel = {
             update: async (record, options) => Promise.resolve(1),
-            findByPk: async (code) => Promise.resolve({code})
+            findByPk: async (code) => Promise.resolve({code: "FO", name: "FOOLANDIA"})
         }
         await countriesController.updateCreateCountry(mockRequest, mockResponse, mockNext, mockModel);
         expect(mockResponse.statusCode).toBe(200);
     })
 
     it("should return 201 when doesn't exist so it is created", async () => {
-        mockRequest.params.country = "BOR";
+        mockRequest.params.country = "FO";
+        mockRequest.body.name = "FOOLANDIA";
         mockModel = {
             update: async (record, options) => Promise.resolve(0),
             create: async (country) => Promise.resolve(country)
@@ -124,7 +126,40 @@ describe("update or create country", () => {
         expect(mockResponse.statusCode).toBe(201);
     })
 
+    it("should return 400 if name is less than 2 characters", async () => {
+        mockRequest.params.country = "FO";
+        mockRequest.body.name = "F";
+        mockModel = {
+            update: async (record, options) => Promise.resolve(1)
+        }
+        await countriesController.updateCreateCountry(mockRequest, mockResponse, mockNext, mockModel);
+        expect(mockResponse.statusCode).toBe(400);
+    })
+
+    it("should return 400 if name is not present when creating", async () => {
+        mockRequest.params.country = "FO";
+        mockModel = {
+            update: async (record, options) => Promise.resolve(0),
+            create: async (country) => Promise.resolve(country)
+        }
+        await countriesController.updateCreateCountry(mockRequest, mockResponse, mockNext, mockModel);
+        expect(mockResponse.statusCode).toBe(400);
+    })
+
+    it("should return 400 if coutry code is not too characters long when creating", async () => {
+        mockRequest.params.country = "FORD";
+        mockRequest.body.name = "FOOLANDIA";
+        mockModel = {
+            update: async (record, options) => Promise.resolve(0),
+            create: async (country) => Promise.resolve(country)
+        }
+        await countriesController.updateCreateCountry(mockRequest, mockResponse, mockNext, mockModel);
+        expect(mockResponse.statusCode).toBe(400);
+    })
+
     it("should call error middleware if update fails", async () => {
+        mockRequest.params.country = "FO";
+        mockRequest.body.name = "FOOLANDIA";
         mockModel = {
             update: async () => Promise.reject(new Error("Problem"))
         }
@@ -133,6 +168,8 @@ describe("update or create country", () => {
     })
 
     it("should call error middleware if create fails", async () => {
+        mockRequest.params.country = "FO";
+        mockRequest.body.name = "FOOLANDIA";
         mockModel = {
             update: async (record, options) => Promise.resolve(0),
             create: async (country) => Promise.reject(new Error("Problem"))

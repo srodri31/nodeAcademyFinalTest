@@ -1,4 +1,6 @@
+const Joi = require("@hapi/joi");
 const { countryHATEOAS } = require("../utils/HATEOAS");
+const { createSchema, updateSchema } = require("../schemas/countrySchema");
 
 async function all(req, res, next, Country) {
     try {
@@ -52,28 +54,38 @@ async function deleteCountry(req, res, next, Country, Region) {
 
 async function updateCreateCountry(req, res, next, Country) {    
     try {
-        let country, status;
+        let country;
         let toUpdateCountry = {
             name: req.body.name
         }
-        let updated = await Country.update(toUpdateCountry, {
-            where: {
-                code: req.params.country 
+        const validatedUpdate = Joi.validate(toUpdateCountry, updateSchema);
+        if(!validatedUpdate.error) {
+            let updated = await Country.update(toUpdateCountry, {
+                where: {
+                    code: req.params.country 
+                }
+            });
+            if(updated > 0) {
+                country = await Country.findByPk(req.params.country);
+                country = countryHATEOAS(country);
+                res.status(200).send(country);
+            } else {
+                let newCountry = {
+                    code: req.params.country,
+                    name: req.body.name
+                }
+                const validatedCreate = Joi.validate(newCountry, createSchema);
+                if(!validatedCreate.error) {
+                    country = await Country.create(newCountry);
+                    country = countryHATEOAS(country);
+                    res.status(201).send(country);
+                } else {
+                    res.status(400).send(`Unable to create country: ${validatedCreate.error.message}`);
+                }
             }
-        });
-        if(updated > 0) {
-            country = await Country.findByPk(req.params.country);
-            status = 200;
         } else {
-            let newCountry = {
-                code: req.params.country,
-                name: req.body.name
-            }
-            country = await Country.create(newCountry);
-            status = 201;
+            res.status(400).send(`Unable to update country: ${validatedUpdate.error.message}`);
         }
-        country = countryHATEOAS(country);
-        res.status(status).send(country);
     } catch(err) {
         next(new Error(`Unable to update country: ${err.message}`));
     }
