@@ -194,8 +194,15 @@ describe("create city", () => {
     });
 
     it("should return 201 when it is created", async () => {
-        mockRequest.params.country = "BOR";
-        mockRequest.params.region = "FOO";
+        mockRequest.params.country = "CO";
+        mockRequest.params.region = "CO.02";
+        mockRequest.body = {
+            "code": "123",
+            "name": "city",
+            "latitude": 20.0,
+            "longitude": 34.7,
+            "population": 120000
+        }
         mockModel = {
             findByPk: async (code) => Promise.resolve({code}),
             create: async (city) => Promise.resolve(city)
@@ -223,7 +230,155 @@ describe("create city", () => {
         expect(mockNext).toHaveBeenCalled();
     })
 
+    it("should return 400 when city code is empty", async () => {
+        mockRequest.params.country = "CO";
+        mockRequest.params.region = "CO.02";
+        mockRequest.body = {
+            "name": "city",
+            "latitude": 20.0,
+            "longitude": 34.7,
+            "population": 120000
+        }
+        mockModel = {
+            findByPk: async (code) => Promise.resolve({code}),
+            create: async (city) => Promise.resolve(city)
+        }
+        await citiesController.createCity(mockRequest, mockResponse, mockNext, mockModel, mockModel, mockModel);
+        expect(mockResponse.statusCode).toBe(400);
+    })
+
+    it("should return 400 when city name is empty", async () => {
+        mockRequest.params.country = "CO";
+        mockRequest.params.region = "CO.02";
+        mockRequest.body = {
+            "code": "123",
+            "latitude": 20.0,
+            "longitude": 34.7,
+            "population": 120000
+        }
+        mockModel = {
+            findByPk: async (code) => Promise.resolve({code}),
+            create: async (city) => Promise.resolve(city)
+        }
+        await citiesController.createCity(mockRequest, mockResponse, mockNext, mockModel, mockModel, mockModel);
+        expect(mockResponse.statusCode).toBe(400);
+    })
+
+    it("should return 400 when city latitude is empty", async () => {
+        mockRequest.params.country = "CO";
+        mockRequest.params.region = "CO.02";
+        mockRequest.body = {
+            "code": "123",
+            "name": "city",
+            "longitude": 34.7,
+            "population": 120000
+        }
+        mockModel = {
+            findByPk: async (code) => Promise.resolve({code}),
+            create: async (city) => Promise.resolve(city)
+        }
+        await citiesController.createCity(mockRequest, mockResponse, mockNext, mockModel, mockModel, mockModel);
+        expect(mockResponse.statusCode).toBe(400);
+    })
+
+    it("should return 400 when city latitude is not a number", async () => {
+        mockRequest.params.country = "CO";
+        mockRequest.params.region = "CO.02";
+        mockRequest.body = {
+            "code": "123",
+            "name": "city",
+            "latitude": "lat",
+            "longitude": 34.7,
+            "population": 120000
+        }
+        mockModel = {
+            findByPk: async (code) => Promise.resolve({code}),
+            create: async (city) => Promise.resolve(city)
+        }
+        await citiesController.createCity(mockRequest, mockResponse, mockNext, mockModel, mockModel, mockModel);
+        expect(mockResponse.statusCode).toBe(400);
+    })
+
+    it("should return 400 when city longitude is empty", async () => {
+        mockRequest.params.country = "CO";
+        mockRequest.params.region = "CO.02";
+        mockRequest.body = {
+            "code": "123",
+            "name": "city",
+            "latitude": 20.0,
+            "population": 120000
+        }
+        mockModel = {
+            findByPk: async (code) => Promise.resolve({code}),
+            create: async (city) => Promise.resolve(city)
+        }
+        await citiesController.createCity(mockRequest, mockResponse, mockNext, mockModel, mockModel, mockModel);
+        expect(mockResponse.statusCode).toBe(400);
+    })
+
+    it("should return 400 when city longitude is not a number", async () => {
+        mockRequest.params.country = "CO";
+        mockRequest.params.region = "CO.02";
+        mockRequest.body = {
+            "code": "123",
+            "name": "city",
+            "latitude": 20.0,
+            "longitude": "lon",
+            "population": 120000
+        }
+        mockModel = {
+            findByPk: async (code) => Promise.resolve({code}),
+            create: async (city) => Promise.resolve(city)
+        }
+        await citiesController.createCity(mockRequest, mockResponse, mockNext, mockModel, mockModel, mockModel);
+        expect(mockResponse.statusCode).toBe(400);
+    })
+
+    it("should return 400 when city population is empty", async () => {
+        mockRequest.params.country = "CO";
+        mockRequest.params.region = "CO.02";
+        mockRequest.body = {
+            "code": "123",
+            "name": "city",
+            "latitude": 20.0,
+            "longitude": 34.7
+        }
+        mockModel = {
+            findByPk: async (code) => Promise.resolve({code}),
+            create: async (city) => Promise.resolve(city)
+        }
+        await citiesController.createCity(mockRequest, mockResponse, mockNext, mockModel, mockModel, mockModel);
+        expect(mockResponse.statusCode).toBe(400);
+    })
+
+    it("should return 400 when city population is not an integer", async () => {
+        mockRequest.params.country = "CO";
+        mockRequest.params.region = "CO.02";
+        mockRequest.body = {
+            "code": "123",
+            "name": "city",
+            "latitude": 20.0,
+            "longitude": 34.7,
+            "population": 120000.786
+        }
+        mockModel = {
+            findByPk: async (code) => Promise.resolve({code}),
+            create: async (city) => Promise.resolve(city)
+        }
+        await citiesController.createCity(mockRequest, mockResponse, mockNext, mockModel, mockModel, mockModel);
+        expect(mockResponse.statusCode).toBe(400);
+    })
+
     it("should call error middleware if create fails", async () => {
+        mockRequest.params.country = "CO";
+        mockRequest.params.region = "CO.02";
+        mockRequest.body = {
+            "code": "123",
+            "name": "city",
+            "latitude": 20.0,
+            "longitude": 34.7,
+            "population": 120000
+        }
         mockModel = {
             findByPk: async (code) => Promise.resolve({code}),
             create: async (city) => Promise.reject(new Error("Problem"))
@@ -256,9 +411,15 @@ describe("update or create city", () => {
     });
 
     it("should return 200 if it is modified", async () => {
-        mockRequest.params.country = "FOO";
-        mockRequest.params.region = "BAZ";
-        mockRequest.params.city = "BAR";
+        mockRequest.params.country = "CO";
+        mockRequest.params.region = "CO.02";
+        mockRequest.params.city = "123";
+        mockRequest.body = {
+            "name": "city",
+            "latitude": 20.0,
+            "longitude": 34.7,
+            "population": 120000
+        }
         mockModel = {
             update: async (record, options) => Promise.resolve(1),
             findByPk: async (code) => Promise.resolve({code}),
@@ -269,9 +430,15 @@ describe("update or create city", () => {
     })
 
     it("should return 201 when doesn't exist so it is created", async () => {
-        mockRequest.params.country = "BOR";
-        mockRequest.params.region = "BAZ";
-        mockRequest.params.city = "BAR";
+        mockRequest.params.country = "CO";
+        mockRequest.params.region = "CO.02";
+        mockRequest.params.city = "123";
+        mockRequest.body = {
+            "name": "city",
+            "latitude": 20.0,
+            "longitude": 34.7,
+            "population": 120000
+        }
         mockModel = {
             update: async (record, options) => Promise.resolve(0),
             findByPk: async (code) => Promise.resolve({code}),
@@ -282,9 +449,15 @@ describe("update or create city", () => {
     })
 
     it("should return 405 when tries to create and country and/or region doesn't exist", async () => {
-        mockRequest.params.country = "BAZ";
-        mockRequest.params.region = "BAZ";
-        mockRequest.params.city = "BAR";
+        mockRequest.params.country = "CO";
+        mockRequest.params.region = "CO.02";
+        mockRequest.params.city = "123";
+        mockRequest.body = {
+            "name": "city",
+            "latitude": 20.0,
+            "longitude": 34.7,
+            "population": 120000
+        }
         mockModel = {
             update: async (record, options) => Promise.resolve(0),
             findByPk: async (code) => Promise.resolve(),
@@ -292,6 +465,135 @@ describe("update or create city", () => {
         }
         await citiesController.updateCity(mockRequest, mockResponse, mockNext, mockModel, mockModel, mockModel, sistersOf);
         expect(mockResponse.statusCode).toBe(405);
+    })
+
+    it("should return 400 when city name is empty when creating", async () => {
+        mockRequest.params.country = "CO";
+        mockRequest.params.region = "CO.02";
+        mockRequest.params.city = "123";
+        mockRequest.body = {
+            "latitude": 20.0,
+            "longitude": 34.7,
+            "population": 120000
+        }
+        mockModel = {
+            update: async (record, options) => Promise.resolve(0),
+            findByPk: async (code) => Promise.resolve({code}),
+            create: async (city) => Promise.resolve(city)
+        }
+        await citiesController.updateCity(mockRequest, mockResponse, mockNext, mockModel, mockModel, mockModel, sistersOf);
+        expect(mockResponse.statusCode).toBe(400);
+    })
+
+    it("should return 400 when city latitude is empty when creating", async () => {
+        mockRequest.params.country = "CO";
+        mockRequest.params.region = "CO.02";
+        mockRequest.params.city = "123";
+        mockRequest.body = {
+            "name": "city",
+            "longitude": 34.7,
+            "population": 120000
+        }
+        mockModel = {
+            update: async (record, options) => Promise.resolve(0),
+            findByPk: async (code) => Promise.resolve({code}),
+            create: async (city) => Promise.resolve(city)
+        }
+        await citiesController.updateCity(mockRequest, mockResponse, mockNext, mockModel, mockModel, mockModel, sistersOf);
+        expect(mockResponse.statusCode).toBe(400);
+    })
+
+    it("should return 400 when city latitude is not a number", async () => {
+        mockRequest.params.country = "CO";
+        mockRequest.params.region = "CO.02";
+        mockRequest.params.city = "123";
+        mockRequest.body = {
+            "name": "city",
+            "latitude": "lat",
+            "longitude": 34.7,
+            "population": 120000
+        }
+        mockModel = {
+            update: async (record, options) => Promise.resolve(1),
+            findByPk: async (code) => Promise.resolve({code}),
+            create: async (city) => Promise.resolve(city)
+        }
+        await citiesController.updateCity(mockRequest, mockResponse, mockNext, mockModel, mockModel, mockModel, sistersOf);
+        expect(mockResponse.statusCode).toBe(400);
+    })
+
+    it("should return 400 when city longitude is empty when creating", async () => {
+        mockRequest.params.country = "CO";
+        mockRequest.params.region = "CO.02";
+        mockRequest.params.city = "123";
+        mockRequest.body = {
+            "name": "city",
+            "latitude": 20.0,
+            "population": 120000
+        }
+        mockModel = {
+            update: async (record, options) => Promise.resolve(0),
+            findByPk: async (code) => Promise.resolve({code}),
+            create: async (city) => Promise.resolve(city)
+        }
+        await citiesController.updateCity(mockRequest, mockResponse, mockNext, mockModel, mockModel, mockModel, sistersOf);
+        expect(mockResponse.statusCode).toBe(400);
+    })
+
+    it("should return 400 when city longitude is not a number", async () => {
+        mockRequest.params.country = "CO";
+        mockRequest.params.region = "CO.02";
+        mockRequest.params.city = "123";
+        mockRequest.body = {
+            "name": "city",
+            "latitude": 20.0,
+            "longitude": "lon",
+            "population": 120000
+        }
+        mockModel = {
+            update: async (record, options) => Promise.resolve(1),
+            findByPk: async (code) => Promise.resolve({code}),
+            create: async (city) => Promise.resolve(city)
+        }
+        await citiesController.updateCity(mockRequest, mockResponse, mockNext, mockModel, mockModel, mockModel, sistersOf);
+        expect(mockResponse.statusCode).toBe(400);
+    })
+
+    it("should return 400 when city population is empty when creating", async () => {
+        mockRequest.params.country = "CO";
+        mockRequest.params.region = "CO.02";
+        mockRequest.params.city = "123";
+        mockRequest.body = {
+            "name": "city",
+            "latitude": 20.0,
+            "longitude": 34.7
+        }
+        mockModel = {
+            update: async (record, options) => Promise.resolve(0),
+            findByPk: async (code) => Promise.resolve({code}),
+            create: async (city) => Promise.resolve(city)
+        }
+        await citiesController.updateCity(mockRequest, mockResponse, mockNext, mockModel, mockModel, mockModel, sistersOf);
+        expect(mockResponse.statusCode).toBe(400);
+    })
+
+    it("should return 400 when city population is not an integer", async () => {
+        mockRequest.params.country = "CO";
+        mockRequest.params.region = "CO.02";
+        mockRequest.params.city = "123";
+        mockRequest.body = {
+            "name": "city",
+            "latitude": 20.0,
+            "longitude": 34.7,
+            "population": 120000.786
+        }
+        mockModel = {
+            update: async (record, options) => Promise.resolve(1),
+            findByPk: async (code) => Promise.resolve({code}),
+            create: async (city) => Promise.resolve(city)
+        }
+        await citiesController.updateCity(mockRequest, mockResponse, mockNext, mockModel, mockModel, mockModel, sistersOf);
+        expect(mockResponse.statusCode).toBe(400);
     })
 
     it("should call error middleware if update fails", async () => {
@@ -312,6 +614,15 @@ describe("update or create city", () => {
     })
 
     it("should call error middleware if create fails", async () => {
+        mockRequest.params.country = "CO";
+        mockRequest.params.region = "CO.02";
+        mockRequest.params.city = "123";
+        mockRequest.body = {
+            "name": "city",
+            "latitude": 20.0,
+            "longitude": 34.7,
+            "population": 120000
+        }
         mockModel = {
             update: async (record, options) => Promise.resolve(0),
             findByPk: async (code) => Promise.resolve({code}),

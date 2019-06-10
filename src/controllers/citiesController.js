@@ -1,4 +1,6 @@
+const Joi = require("@hapi/joi");
 const { cityHATEOAS } = require("../utils/HATEOAS");
+const { createSchema, updateSchema } = require("../schemas/citySchema");
 
 async function getCities(req, res, next, City, sistersOf) {
     try {
@@ -81,11 +83,16 @@ async function createCity(req, res, next, City, Region, Country) {
             let newCity = {
                 code, name, latitude, longitude, population, country, region
             }
-            let city = await City.create(newCity);
-            city = cityHATEOAS(city);
-            res.status(201).send(city);
+            const { error: errorValidaion } = Joi.validate(newCity, createSchema);
+            if(!errorValidaion) {
+                let city = await City.create(newCity);
+                city = cityHATEOAS(city);
+                res.status(201).send(city);
+            } else {
+                res.status(400).send(`Unable to create city: ${errorValidaion.message}`);
+            }
         } else {
-            res.status(405).send(`Cannot create city with non existent country and/or non existent region`);
+            res.status(405).send(`Cannot create city for non existent country and/or non existent region`);
         }
     } catch(err) {
         next(new Error(`Error creating city: ${err.message}`));
@@ -99,27 +106,37 @@ async function updateCity(req, res, next, City, Region, Country, sistersOf) {
         let toUpdateCity = {
             name, latitude, longitude, population, country, region
         }
-        let updatedRows = await City.update(toUpdateCity, {
-            where: { code }
-        });
-        if(updatedRows > 0) {
-            let cityUpdated = await City.findByPk(code);
-            cityUpdated = await sistersOf(cityUpdated);
-            cityUpdated = cityHATEOAS(cityUpdated);
-            res.status(200).send(cityUpdated);
-        } else {
-            let regionRecord = await Region.findByPk(region);
-            let countryRecord = await Country.findByPk(country);
-            if(countryRecord && regionRecord) {
-                let newCity = {
-                    code, name, latitude, longitude, population, country, region
-                }
-                let city = await City.create(newCity);
-                city = cityHATEOAS(city);
-                res.status(201).send(city);
+        const { error: errValidateCreate } = Joi.validate(toUpdateCity, updateSchema);
+        if(!errValidateCreate) {
+            let updatedRows = await City.update(toUpdateCity, {
+                where: { code }
+            });
+            if(updatedRows > 0) {
+                let cityUpdated = await City.findByPk(code);
+                cityUpdated = await sistersOf(cityUpdated);
+                cityUpdated = cityHATEOAS(cityUpdated);
+                res.status(200).send(cityUpdated);
             } else {
-                res.status(405).send(`Cannot create city with non existent country and/or non existent region`);
+                let regionRecord = await Region.findByPk(region);
+                let countryRecord = await Country.findByPk(country);
+                if(countryRecord && regionRecord) {
+                    let newCity = {
+                        code, name, latitude, longitude, population, country, region
+                    }
+                    const { error: errValidateUpdate } = Joi.validate(newCity, createSchema);
+                    if(!errValidateUpdate) {
+                        let city = await City.create(newCity);
+                        city = cityHATEOAS(city);
+                        res.status(201).send(city);
+                    } else {
+                        res.status(400).send(`Unable to create city: ${errValidateUpdate.message}`);
+                    }
+                } else {
+                    res.status(405).send(`Cannot create city with non existent country and/or non existent region`);
+                }
             }
+        } else {
+            res.status(400).send(`Unable to update city: ${errValidateCreate.message}`);
         }
     } catch(err) {
         next(new Error(`Error updating city: ${err.message}`));
