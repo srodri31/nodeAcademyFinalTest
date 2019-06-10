@@ -1,0 +1,617 @@
+{
+	"info": {
+		"_postman_id": "7a5c34bd-4aba-41c2-b3ee-7f596511fad8",
+		"name": "Node Academy final test",
+		"description": "Collection of request of the valid api endpoints",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Countries",
+			"item": [
+				{
+					"name": "Get all countries",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "localhost:3000/countries",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"countries"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get country with specific code",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "localhost:3000/countries/CO",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"countries",
+								"CO"
+							]
+						},
+						"description": "/countries/:code"
+					},
+					"response": []
+				},
+				{
+					"name": "Update country",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"name\": \"Colombia edited\"\n}"
+						},
+						"url": {
+							"raw": "localhost:3000/countries/CO",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"countries",
+								"CO"
+							]
+						},
+						"description": "/countries/:code"
+					},
+					"response": []
+				},
+				{
+					"name": "Create country",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"name\": \"Locombia\"\n}"
+						},
+						"url": {
+							"raw": "localhost:3000/countries/LO",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"countries",
+								"LO"
+							]
+						},
+						"description": "/countries/:code"
+					},
+					"response": []
+				},
+				{
+					"name": "Delete country",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "localhost:3000/countries/LO",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"countries",
+								"LO"
+							]
+						},
+						"description": "/country/:code\n\nCountry must not have associated regions"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Regions",
+			"item": [
+				{
+					"name": "Get all regions",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "localhost:3000/regions/",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"regions",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get all regions from country",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "localhost:3000/regions/CO",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"regions",
+								"CO"
+							]
+						},
+						"description": "/regions/:countryCode"
+					},
+					"response": []
+				},
+				{
+					"name": "Get region by specific code",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "localhost:3000/regions/CO/CO.02",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"regions",
+								"CO",
+								"CO.02"
+							]
+						},
+						"description": "/regions/:countryCode/:regionCode"
+					},
+					"response": []
+				},
+				{
+					"name": "Create region for country",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"code\": \"CO.9012\",\n\t\"name\": \"Venezuela\"\n}"
+						},
+						"url": {
+							"raw": "localhost:3000/regions/CO",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"regions",
+								"CO"
+							]
+						},
+						"description": "/regions/:countryCode"
+					},
+					"response": []
+				},
+				{
+					"name": "Update region",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"name\": \"Antioquia edited\"\n}"
+						},
+						"url": {
+							"raw": "localhost:3000/regions/CO/CO.02",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"regions",
+								"CO",
+								"CO.02"
+							]
+						},
+						"description": "/regions/:countryCode/:regionCode"
+					},
+					"response": []
+				},
+				{
+					"name": "Delete region",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "localhost:3000/regions/CO/CO.9012",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"regions",
+								"CO",
+								"CO.9012"
+							]
+						},
+						"description": "/regions/:countryCode/:regionCode\n\nregion must not have associated cities"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Cities",
+			"item": [
+				{
+					"name": "Get all cities is not allowed",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "localhost:3000/cities/",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"cities",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get all cities by country",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "localhost:3000/cities/?country=CO",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"cities",
+								""
+							],
+							"query": [
+								{
+									"key": "country",
+									"value": "CO"
+								}
+							]
+						},
+						"description": "/cities/?country=:countryCode"
+					},
+					"response": []
+				},
+				{
+					"name": "Get all cities by country and region",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "localhost:3000/cities/?country=CO&region=CO.02",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"cities",
+								""
+							],
+							"query": [
+								{
+									"key": "country",
+									"value": "CO"
+								},
+								{
+									"key": "region",
+									"value": "CO.02"
+								}
+							]
+						},
+						"description": "/cities/?country=:countryCode&region=:regionCode"
+					},
+					"response": []
+				},
+				{
+					"name": "Get city for specific code",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "localhost:3000/cities/3674962",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"cities",
+								"3674962"
+							]
+						},
+						"description": "/cities/:cityCOde"
+					},
+					"response": []
+				},
+				{
+					"name": "Create city for country and region",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"code\": \"9090909099090\",\n\t\"name\": \"Uribilandoa\",\n\t\"latitude\": 67.43,\n\t\"longitude\": 56.45,\n\t\"population\": 2300000\n}"
+						},
+						"url": {
+							"raw": "localhost:3000/cities/CO/CO.02",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"cities",
+								"CO",
+								"CO.02"
+							]
+						},
+						"description": "/cities/:countryCode/:regionCode"
+					},
+					"response": []
+				},
+				{
+					"name": "Update City",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"name\": \"Uribiladia Edited\",\n\t\"population\": 6000000\n}"
+						},
+						"url": {
+							"raw": "localhost:3000/cities/CO/CO.02/9090909099090",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"cities",
+								"CO",
+								"CO.02",
+								"9090909099090"
+							]
+						},
+						"description": "/cities/:countryCode/:regionCode/:cityCode"
+					},
+					"response": []
+				},
+				{
+					"name": "Delete city",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "localhost:3000/cities/9090909099090",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"cities",
+								"9090909099090"
+							]
+						},
+						"description": "/cities/:cityCode\n\nCity must not have sisters"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Sisters",
+			"item": [
+				{
+					"name": "Get all sisters pairs",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "localhost:3000/sisters/",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"sisters",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get all sisters from city",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "localhost:3000/sisters/3674962",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"sisters",
+								"3674962"
+							]
+						},
+						"description": "/sisters/:cityCode"
+					},
+					"response": []
+				},
+				{
+					"name": "Get specific sister pair",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "localhost:3000/sisters/3674962/3666519",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"sisters",
+								"3674962",
+								"3666519"
+							]
+						},
+						"description": "/sisters/:cityA/:cityB\n/sisters/:cityB/:cityA"
+					},
+					"response": []
+				},
+				{
+					"name": "Create a sisters pair",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"city1\": \"3688689\",\n\t\"city2\": \"3690577\"\n}"
+						},
+						"url": {
+							"raw": "localhost:3000/sisters/",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"sisters",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Sisters pair",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"city1\": \"3688689\",\n\t\"city2\": \"3689905\"\n}"
+						},
+						"url": {
+							"raw": "localhost:3000/sisters/3690577/3688689",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"sisters",
+								"3690577",
+								"3688689"
+							]
+						},
+						"description": "/cities/:cityA/:cityB\n/cities/:cityB/:cityA\n"
+					},
+					"response": []
+				},
+				{
+					"name": "Delete sisters pair",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "localhost:3000/sisters/3689905/3688689",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"sisters",
+								"3689905",
+								"3688689"
+							]
+						},
+						"description": "/cities/:cityA/:cityB\n/cities/:cityB/:cityA"
+					},
+					"response": []
+				}
+			]
+		}
+	]
+}
