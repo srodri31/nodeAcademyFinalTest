@@ -53,7 +53,7 @@ async function getCity(req, res, next, City, sistersOf) {
 
 async function deleteCity(req, res, next, City, sistersOf) {
     try {
-        let sisters = await sistersOf({code: req.params.city});
+        let {sisters} = await sistersOf({code: req.params.city});
         if(sisters.length === 0) {
             let deleted = await City.destroy({
                 where: {
