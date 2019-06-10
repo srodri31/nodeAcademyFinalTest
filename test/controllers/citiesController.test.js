@@ -655,7 +655,7 @@ describe("delete city", () => {
     });
 
     it("should return 204 when city is deleted because it has no sisters", async () => {
-        sistersOf = async () => Promise.resolve([]);
+        sistersOf = async () => Promise.resolve({sisters: []});
         mockRequest.params.city = "FOO";
         mockModel = {
             destroy: async () => Promise.resolve(1)
@@ -665,7 +665,7 @@ describe("delete city", () => {
     })
 
     it("should return 404 if given city is not found", async () => {
-        sistersOf = async () => Promise.resolve([]);
+        sistersOf = async () => Promise.resolve({sisters: []});
         mockRequest.params.city = "BAR";
         mockModel = {
             destroy: async () => Promise.resolve(0)
@@ -675,7 +675,7 @@ describe("delete city", () => {
     })
 
     it("should return 405 when it violates sisters foreign key", async () => {
-        sistersOf = async () => Promise.resolve([1]);
+        sistersOf = async () => Promise.resolve({sisters: [1]});
         mockRequest.params.city = "FO";
         mockModel = {
             destroy: async () => Promise.resolve(0)
@@ -685,7 +685,7 @@ describe("delete city", () => {
     })
 
     it("should call error middleware if delete fails", async () => {
-        sistersOf = async () => Promise.resolve([]);
+        sistersOf = async () => Promise.resolve({sisters: []});
         mockRequest.params.city = "BAZ";
         mockModel = {
             destroy: async () => Promise.reject(new Error("Error in db"))
