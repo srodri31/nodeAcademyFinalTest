@@ -22,7 +22,7 @@ router.post("/:country", (...params) => {
     regionsController.createRegion(...params, Region, Country);
 });
 router.put("/:country/:region", (...params) => {
-    regionsController.updateRegion(...params, Region);
+    regionsController.updateRegion(...params, Region, Country);
 });
 
 module.exports = router;

@@ -152,7 +152,11 @@ describe("create region", () => {
     });
 
     it("should return 201 when it is created", async () => {
-        mockRequest.params.country = "FOO";
+        mockRequest.params.country = "FO";
+        mockRequest.body = {
+            code: "RE.01",
+            name: "Region"
+        }
         mockModel = {
             create: async (region) => Promise.resolve(region),
             findByPk: async (code) => Promise.resolve({code})
@@ -171,6 +175,46 @@ describe("create region", () => {
         expect(mockResponse.statusCode).toBe(405);
     })
 
+    it("should return 400 if name is empty", async () => {
+        mockRequest.params.country = "FO";
+        mockRequest.body = {
+            code: "RE.01"
+        }
+        mockModel = {
+            create: async (region) => Promise.resolve(region),
+            findByPk: async (code) => Promise.resolve({code})
+        }
+        await regionsController.createRegion(mockRequest, mockResponse, mockNext, mockModel, mockModel);
+        expect(mockResponse.statusCode).toBe(400);
+    })
+
+    it("should return 400 if code is empty", async () => {
+        mockRequest.params.country = "FO";
+        mockRequest.body = {
+            name: "Region"
+        }
+        mockModel = {
+            create: async (region) => Promise.resolve(region),
+            findByPk: async (code) => Promise.resolve({code})
+        }
+        await regionsController.createRegion(mockRequest, mockResponse, mockNext, mockModel, mockModel);
+        expect(mockResponse.statusCode).toBe(400);
+    })
+
+    it("should return 400 if country is not 2 characters long", async () => {
+        mockRequest.params.country = "FOO";
+        mockRequest.body = {
+            code: "RE.01",
+            name: "Region"
+        }
+        mockModel = {
+            create: async (region) => Promise.resolve(region),
+            findByPk: async (code) => Promise.resolve({code})
+        }
+        await regionsController.createRegion(mockRequest, mockResponse, mockNext, mockModel, mockModel);
+        expect(mockResponse.statusCode).toBe(400);
+    })
+
     it("should call error middleware if select country fails", async () => {
         mockModel = {
             findByPk: async () => Promise.reject(new Error("Problem"))
@@ -180,6 +224,11 @@ describe("create region", () => {
     })
 
     it("should call error middleware if create fails", async () => {
+        mockRequest.params.country = "FO";
+        mockRequest.body = {
+            code: "RE.01",
+            name: "Region"
+        }
         mockModel = {
             create: async () => Promise.reject(new Error("Problem")),
             findByPk: async (code) => Promise.resolve({code})
@@ -210,32 +259,111 @@ describe("update or create region", () => {
     });
 
     it("should return 200 if it is modified", async () => {
-        mockRequest.params.country = "FOO";
-        mockRequest.params.region = "BAR";
+        mockRequest.params.country = "BO";
+        mockRequest.params.region = "B0.03";
+        mockRequest.body = {
+            name: "Region"
+        }
         mockModel = {
             update: async (record, options) => Promise.resolve(1),
             findByPk: async (code) => Promise.resolve({code})
         }
-        await regionsController.updateRegion(mockRequest, mockResponse, mockNext, mockModel);
+        await regionsController.updateRegion(mockRequest, mockResponse, mockNext, mockModel, mockModel);
         expect(mockResponse.statusCode).toBe(200);
     })
 
     it("should return 201 when doesn't exist so it is created", async () => {
-        mockRequest.params.country = "BOR";
-        mockRequest.params.region = "BAR";
+        mockRequest.params.country = "BO";
+        mockRequest.params.region = "B0.03";
+        mockRequest.body = {
+            name: "Region"
+        }
         mockModel = {
             update: async (record, options) => Promise.resolve(0),
+            findByPk: async (code) => Promise.resolve({code}),
             create: async (country) => Promise.resolve(country)
         }
-        await regionsController.updateRegion(mockRequest, mockResponse, mockNext, mockModel);
+        await regionsController.updateRegion(mockRequest, mockResponse, mockNext, mockModel, mockModel);
         expect(mockResponse.statusCode).toBe(201);
+    })
+
+    it("should return 405 when country does not exist when creating", async () => {
+        mockRequest.params.country = "BO";
+        mockRequest.params.region = "B0.03";
+        mockRequest.body = {
+            name: "Region"
+        }
+        mockModel = {
+            update: async (record, options) => Promise.resolve(0),
+            findByPk: async (code) => Promise.resolve(),
+            create: async (country) => Promise.resolve(country)
+        }
+        await regionsController.updateRegion(mockRequest, mockResponse, mockNext, mockModel, mockModel);
+        expect(mockResponse.statusCode).toBe(405);
+    })
+
+    it("should return 400 if name is not string when updating", async () => {
+        mockRequest.params.country = "BO";
+        mockRequest.params.region = "B0.03";
+        mockRequest.body = {
+            name: 230
+        }
+        mockModel = {
+            update: async (record, options) => Promise.resolve(1),
+            findByPk: async (code) => Promise.resolve(),
+            create: async (country) => Promise.resolve(country)
+        }
+        await regionsController.updateRegion(mockRequest, mockResponse, mockNext, mockModel, mockModel);
+        expect(mockResponse.statusCode).toBe(400);
+    })
+
+    it("should return 400 if name is not string when creating", async () => {
+        mockRequest.params.country = "BO";
+        mockRequest.params.region = "B0.03";
+        mockRequest.body = {
+            name: 230
+        }
+        mockModel = {
+            update: async (record, options) => Promise.resolve(0),
+            findByPk: async (code) => Promise.resolve({code}),
+            create: async (country) => Promise.resolve(country)
+        }
+        await regionsController.updateRegion(mockRequest, mockResponse, mockNext, mockModel, mockModel);
+        expect(mockResponse.statusCode).toBe(400);
+    })
+
+    it("should return 400 if name is empty when creating", async () => {
+        mockRequest.params.country = "BO";
+        mockRequest.params.region = "B0.03";
+        mockModel = {
+            update: async (record, options) => Promise.resolve(0),
+            findByPk: async (code) => Promise.resolve({code}),
+            create: async (country) => Promise.resolve(country)
+        }
+        await regionsController.updateRegion(mockRequest, mockResponse, mockNext, mockModel, mockModel);
+        expect(mockResponse.statusCode).toBe(400);
+    })
+
+    it("should return 400 if country is not 2 characters long", async () => {
+        mockRequest.params.country = "BOOR";
+        mockRequest.params.region = "B0OR.03";
+        mockRequest.body = {
+            name: "Region"
+        }
+        mockModel = {
+            update: async (record, options) => Promise.resolve(1),
+            findByPk: async (code) => Promise.resolve({code}),
+            create: async (country) => Promise.resolve(country)
+        }
+        await regionsController.createRegion(mockRequest, mockResponse, mockNext, mockModel, mockModel);
+        expect(mockResponse.statusCode).toBe(400);
     })
 
     it("should call error middleware if update fails", async () => {
         mockModel = {
             update: async () => Promise.reject(new Error("Problem"))
         }
-        await regionsController.updateRegion(mockRequest, mockResponse, mockNext, mockModel);
+        await regionsController.updateRegion(mockRequest, mockResponse, mockNext, mockModel, mockModel);
         expect(mockNext).toHaveBeenCalled();
     })
 
@@ -244,7 +372,7 @@ describe("update or create region", () => {
             update: async (record, options) => Promise.resolve(0),
             create: async (country) => Promise.reject(new Error("Problem"))
         }
-        await regionsController.updateRegion(mockRequest, mockResponse, mockNext, mockModel);
+        await regionsController.updateRegion(mockRequest, mockResponse, mockNext, mockModel, mockModel);
         expect(mockNext).toHaveBeenCalled();
     })
 })

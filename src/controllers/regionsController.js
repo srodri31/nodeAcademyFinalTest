@@ -1,4 +1,6 @@
+const Joi = require("@hapi/joi");
 const { regionHATEOAS } = require("../utils/HATEOAS");
+const { createSchema, updateSchema } = require("../schemas/regionSchema");
 
 async function all(req, res, next, Region) {
     try {
@@ -76,9 +78,14 @@ async function createRegion(req, res, next, Region, Country) {
                 name: req.body.name,
                 country: req.params.country
             }
-            let region = await Region.create(newRegion);
-            region = regionHATEOAS(region);
-            res.status(201).send(region);
+            const validated = Joi.validate(newRegion, createSchema);
+            if(!validated.error) {
+                let region = await Region.create(newRegion);
+                region = regionHATEOAS(region);
+                res.status(201).send(region);
+            } else {
+                res.status(400).send(`Unable to create region: ${validated.error.message}`);
+            }
         } else {
             res.status(405).send("Cannot create region for non existent country");
         }
@@ -87,31 +94,45 @@ async function createRegion(req, res, next, Region, Country) {
     }
 }
 
-async function updateRegion(req, res, next, Region) {
+async function updateRegion(req, res, next, Region, Country) {
     try {
-        let status;
         let region = {
             name: req.body.name,
-            country: req.body.country
+            country: req.params.country
         }
-        let updatedRows = await Region.update(region, {
-            where: {
-                code: req.params.region
+        const validatedUpdate = Joi.validate(region, updateSchema);
+        if(!validatedUpdate.error) {
+            let updatedRows = await Region.update(region, {
+                where: {
+                    code: req.params.region
+                }
+            })
+            if(updatedRows > 0) {
+                region = await Region.findByPk(req.params.region);
+                region = regionHATEOAS(region);
+                res.status(200).send(region);
+            } else {
+                let country = await Country.findByPk(req.params.country);
+                if(country) {
+                    let newRegion = {
+                        code: req.params.region,
+                        ...region
+                    }
+                    const validatedCreate = Joi.validate(newRegion, createSchema);
+                    if(!validatedCreate.error) {
+                        let region = await Region.create(newRegion);
+                        region = regionHATEOAS(region);
+                        res.status(201).send(region);
+                    } else {
+                        res.status(400).send(`Unable to create region: ${validatedCreate.error.message}`);
+                    }
+                } else {
+                    res.status(405).send("Cannot create region for non existent country");
+                }
             }
-        })
-        if(updatedRows > 0) {
-            region = await Region.findByPk(req.params.region);
-            status = 200;
         } else {
-            let newRegion = {
-                code: req.params.region,
-                ...region
-            }
-            region = await Region.create(newRegion);
-            status = 201;
+            res.status(400).send(`Unable to update region: ${validatedUpdate.error.message}`);
         }
-        region = regionHATEOAS(region);
-        res.status(status).send(region);
     } catch(err) {
         next(new Error(`Error updating or creating region ${err.message}`));
     }
