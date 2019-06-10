@@ -1,6 +1,7 @@
 const Sequelize = require("sequelize");
-
+const Joi = require("@hapi/joi");
 const { sisterHATEOAS } = require("../utils/HATEOAS");
+const { createSchema, updateSchema } = require("../schemas/sisterSchema");
 
 async function all(req, res, next, Sister) {
     try {
@@ -40,9 +41,14 @@ async function createSistersPair(req, res, next, Sister, City) {
             let newSisters = {
                 city1, city2
             }
-            let sister = await Sister.create(newSisters);
-            sister = sisterHATEOAS(sister);
-            res.status(201).send(sister);
+            const { error: errValidate } = Joi.validate(newSisters, createSchema);
+            if(!errValidate) {
+                let sister = await Sister.create(newSisters);
+                sister = sisterHATEOAS(sister);
+                res.status(201).send(sister);
+            } else {
+                res.status(400).send(`Unable to create sisters pair: ${errValidate.message}`);
+            }
         } else {
             res.status(405).send(`Cannot create sisters pair for nonexistent cities`);
         }
@@ -76,24 +82,34 @@ async function updateSistersPair(req, res, next, Sister, City) {
         const { cityA, cityB } = req.params;
         const { city1, city2 } = req.body;
         let sisterPair = { city1, city2 };
-        let updatedRows = await Sister.update( sisterPair, {
-            where: Sequelize.or(
-                {city1: cityA, city2: cityB},
-                {city1: cityB, city2: cityA}
-            )
-        });
-        if(updatedRows > 0) {
-            res.status(200).send(`Done updating sisters pair`);
-        } else {
-            let cityA = await City.findByPk(city1);
-            let cityB = await City.findByPk(city2);
-            if(cityA && cityB) {
-                let sister = await Sister.create(sisterPair);
-                sister = sisterHATEOAS(sister);
-                res.status(201).send(sister);
+        const { error: errValidateUpdate } = Joi.validate(sisterPair, updateSchema);
+        if(!errValidateUpdate) {
+            let updatedRows = await Sister.update( sisterPair, {
+                where: Sequelize.or(
+                    {city1: cityA, city2: cityB},
+                    {city1: cityB, city2: cityA}
+                )
+            });
+            if(updatedRows > 0) {
+                res.status(200).send(`Done updating sisters pair`);
             } else {
-                res.status(405).send(`Cannot create sisters pair for nonexistent cities`);
+                let cityA = await City.findByPk(city1);
+                let cityB = await City.findByPk(city2);
+                if(cityA && cityB) {
+                    const { error: errValidate } = Joi.validate(sisterPair, createSchema);
+                    if(!errValidate) {
+                        let sister = await Sister.create(sisterPair);
+                        sister = sisterHATEOAS(sister);
+                        res.status(201).send(sister);
+                    } else {
+                        res.status(400).send(`Unable to create sisters pair: ${errValidate.message}`);
+                    }
+                } else {
+                    res.status(405).send(`Cannot create sisters pair for nonexistent cities`);
+                }
             }
+        } else {
+            res.status(400).send(`Unable to create sisters pair: ${errValidateUpdate.message}`);
         }
     } catch(err) {
         next(new Error(`Error updating sisters pair ${err.message}`));

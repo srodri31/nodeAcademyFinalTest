@@ -162,6 +162,26 @@ describe("create sister pair", () => {
         expect(mockResponse.statusCode).toBe(201);
     })
 
+    it("should return 400 if city 1 is empty", async () => {
+        mockRequest.body.city2 = "BAR";
+        mockModel = {
+            create: async (sister) => Promise.resolve(sister),
+            findByPk: async (code) => Promise.resolve({code})
+        }
+        await sistersController.createSistersPair(mockRequest, mockResponse, mockNext, mockModel, mockModel);
+        expect(mockResponse.statusCode).toBe(400);
+    })
+
+    it("should return 400 if city2 is empty", async () => {
+        mockRequest.body.city1 = "FOO";
+        mockModel = {
+            create: async (sister) => Promise.resolve(sister),
+            findByPk: async (code) => Promise.resolve({code})
+        }
+        await sistersController.createSistersPair(mockRequest, mockResponse, mockNext, mockModel, mockModel);
+        expect(mockResponse.statusCode).toBe(400);
+    })
+
     it("should return 405 when at least one of the cities does not exist", async () => {
         mockRequest.body.city1 = "FOO";
         mockRequest.body.city2 = "BAZ";
@@ -182,6 +202,8 @@ describe("create sister pair", () => {
     })
 
     it("should call error middleware if create fails", async () => {
+        mockRequest.body.city1 = "FOO";
+        mockRequest.body.city2 = "BAR";
         mockModel = {
             create: async () => Promise.reject(new Error("Problem")),
             findByPk: async (code) => Promise.resolve({code})
@@ -214,6 +236,10 @@ describe("update or create sister pair", () => {
     it("should return 200 if it is modified", async () => {
         mockRequest.params.cityA = "FOO";
         mockRequest.params.cityB = "BAR";
+        mockRequest.body = {
+            city1: "BOR",
+            city2: "MED"
+        }
         mockModel = {
             update: async (record, options) => Promise.resolve(1),
             findByPk: async (code) => Promise.resolve({code})
@@ -222,9 +248,43 @@ describe("update or create sister pair", () => {
         expect(mockResponse.statusCode).toBe(200);
     })
 
+    it("should return 400 if city1 is not a string", async () => {
+        mockRequest.params.cityA = "FOO";
+        mockRequest.params.cityB = "BAR";
+        mockRequest.body = {
+            city1: 345,
+            city2: "MED"
+        }
+        mockModel = {
+            update: async (record, options) => Promise.resolve(1),
+            findByPk: async (code) => Promise.resolve({code})
+        }
+        await sistersController.updateSistersPair(mockRequest, mockResponse, mockNext, mockModel, mockModel);
+        expect(mockResponse.statusCode).toBe(400);
+    })
+
+    it("should return 400 if city2 is not a string", async () => {
+        mockRequest.params.cityA = "FOO";
+        mockRequest.params.cityB = "BAR";
+        mockRequest.body = {
+            city1: "BOR",
+            city2: 345
+        }
+        mockModel = {
+            update: async (record, options) => Promise.resolve(1),
+            findByPk: async (code) => Promise.resolve({code})
+        }
+        await sistersController.updateSistersPair(mockRequest, mockResponse, mockNext, mockModel, mockModel);
+        expect(mockResponse.statusCode).toBe(400);
+    })
+
     it("should return 201 when doesn't exist so it is created", async () => {
         mockRequest.params.cityA = "BOR";
         mockRequest.params.cityB = "BAR";
+        mockRequest.body = {
+            city1: "BOR",
+            city2: "MED"
+        }
         mockModel = {
             update: async (record, options) => Promise.resolve(0),
             findByPk: async (code) => Promise.resolve({code}),
@@ -232,6 +292,36 @@ describe("update or create sister pair", () => {
         }
         await sistersController.updateSistersPair(mockRequest, mockResponse, mockNext, mockModel, mockModel);
         expect(mockResponse.statusCode).toBe(201);
+    })
+
+    it("should return 400 if city1 is empty when creating", async () => {
+        mockRequest.params.cityA = "BOR";
+        mockRequest.params.cityB = "BAR";
+        mockRequest.body = {
+            city2: "MED"
+        }
+        mockModel = {
+            update: async (record, options) => Promise.resolve(0),
+            findByPk: async (code) => Promise.resolve({code}),
+            create: async (sister) => Promise.resolve(sister)
+        }
+        await sistersController.updateSistersPair(mockRequest, mockResponse, mockNext, mockModel, mockModel);
+        expect(mockResponse.statusCode).toBe(400);
+    })
+
+    it("should return 400 if city2 is empty when creating", async () => {
+        mockRequest.params.cityA = "BOR";
+        mockRequest.params.cityB = "BAR";
+        mockRequest.body = {
+            city1: "BOR"
+        }
+        mockModel = {
+            update: async (record, options) => Promise.resolve(0),
+            findByPk: async (code) => Promise.resolve({code}),
+            create: async (sister) => Promise.resolve(sister)
+        }
+        await sistersController.updateSistersPair(mockRequest, mockResponse, mockNext, mockModel, mockModel);
+        expect(mockResponse.statusCode).toBe(400);
     })
     
     it("should return 405 when tries to create and at least one of the cities doesn't exist", async () => {
@@ -264,6 +354,12 @@ describe("update or create sister pair", () => {
     })
 
     it("should call error middleware if create fails", async () => {
+        mockRequest.params.cityA = "BOR";
+        mockRequest.params.cityB = "BAR";
+        mockRequest.body = {
+            city1: "BOR",
+            city2: "MED"
+        }
         mockModel = {
             update: async (record, options) => Promise.resolve(0),
             findByPk: async (code) => Promise.resolve({code}),

@@ -83,13 +83,13 @@ async function createCity(req, res, next, City, Region, Country) {
             let newCity = {
                 code, name, latitude, longitude, population, country, region
             }
-            const { error: errorValidaion } = Joi.validate(newCity, createSchema);
-            if(!errorValidaion) {
+            const { error: errorValidation } = Joi.validate(newCity, createSchema);
+            if(!errorValidation) {
                 let city = await City.create(newCity);
                 city = cityHATEOAS(city);
                 res.status(201).send(city);
             } else {
-                res.status(400).send(`Unable to create city: ${errorValidaion.message}`);
+                res.status(400).send(`Unable to create city: ${errorValidation.message}`);
             }
         } else {
             res.status(405).send(`Cannot create city for non existent country and/or non existent region`);
