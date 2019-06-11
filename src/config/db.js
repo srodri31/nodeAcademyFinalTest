@@ -1,4 +1,6 @@
 const Sequelize = require('sequelize');
-const sequelize = new Sequelize('mysql://root:root@localhost:3306/nodeacademy');
+const { DB_HOST, DB_USER, DB_PASSWORD, DB_NAME } = process.env;
+
+const sequelize = new Sequelize(`mysql://${DB_USER}:${DB_PASSWORD}@${DB_HOST}/${DB_NAME}`);
 
 module.exports = sequelize;

@@ -5,7 +5,7 @@
   "main": "src/app.js",
   "scripts": {
     "start": "node src/app.js",
-    "dev": "nodemon src/app.js",
+    "dev": "nodemon -r dotenv/config src/app.js",
     "test": "jest --detectOpenHandles",
     "test:coverage": "jest --collect-coverage --no-cache"
   },
@@ -23,6 +23,7 @@
     "winston": "^3.2.1"
   },
   "devDependencies": {
+    "dotenv": "^8.0.0",
     "jest": "^24.8.0",
     "nodemon": "^1.19.1"
   }
