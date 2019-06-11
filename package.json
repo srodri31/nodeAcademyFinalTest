@@ -10,7 +10,7 @@
     "test:coverage": "jest --collect-coverage --no-cache"
   },
   "keywords": [],
-  "author": "",
+  "author": "Santiago Rodriguez Parra",
   "license": "ISC",
   "dependencies": {
     "@hapi/joi": "^15.0.3",
