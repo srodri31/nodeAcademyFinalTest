@@ -1,13 +1,26 @@
 # nodeAcademyFinalTest
-Practice all of the concepts learn during the node academy building a restful api
+Practice all of the concepts learn during the node academy by building a restful api
 
 # How to start
 
-Run the following command
+Run the following command after cloning the repo
 
 ```sh
 $ npm install
 ```
+
+## Setup
+
+This app connects to a MySQL database to manage all of its resources, to connect to your database you'll need to provide a **.env** file with the following variables:
+
+```bash
+DB_HOST='localhost'
+DB_USER='your_db_user'
+DB_PASSWORD='your_db_user_password'
+DB_NAME='your_db_name'
+```
+
+You'll need to install MySQL in your machine and set up a database to connect to.
 
 # Development server
 
