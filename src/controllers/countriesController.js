@@ -1,10 +1,17 @@
 const Joi = require("@hapi/joi");
 const { countryHATEOAS } = require("../utils/HATEOAS");
 const { createSchema, updateSchema } = require("../schemas/countrySchema");
+const { Op } = require("sequelize");
 
 async function all(req, res, next, Country) {
     try {
-        let countries = await Country.findAll();
+        let options;
+        if(req.query.name) {
+            options = {
+                where: { name: { [Op.like]: `%${req.query.name}%`} }
+            }
+        }
+        let countries = await Country.findAll(options);
         let result = countries.map(countryHATEOAS)
         return res.status(200).send(result);
     } catch (e) {
@@ -40,12 +47,12 @@ async function deleteCountry(req, res, next, Country, Region) {
                 }
             });
             if(deleted) {
-                res.status(204).send("Done destroying country");
+                res.status(204).send({message: "Done destroying country"});
             } else {
-                res.status(404).send(`Unable to destroy country: Country not found`);
+                res.status(404).send({message: `Unable to destroy country: Country not found`});
             }
         } else {
-            res.status(405).send(`Country with regions can not be deleted`);
+            res.status(405).send({message:`Country with regions can not be deleted`});
         }
     } catch (err) {
         next(new Error(`Unable to destroy country: ${err.message}`));
